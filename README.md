@@ -1,10 +1,10 @@
 # module.persistence
 
-- [InMemory](../module.persistence.inmemory)
-- [FileSystem](../module.persistence.filesystem)
-- [Redis](../module.persistence.redis)
-- [MongoDB](../module.persistence.mongodb)
-- [Neo4j](../module.persistence.neo4j)
+- [InMemory](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.inmemory)
+- [FileSystem](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.filesystem)
+- [Redis](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.redis)
+- [MongoDB](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.mongodb)
+- [Neo4j](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.neo4j)
 
 ## Interface
 
