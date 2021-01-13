@@ -3,8 +3,21 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/module.persistence.js",
+  "dependencies": {
+    "rdflib": "^2.1.3",
+    "n3": "^1.7.0"
+  },
+  "devDependencies": {
+    "mocha": "^8.2.1",
+    "expect": "^26.6.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
+  },
+  "mocha": {
+    "bail": false,
+    "recursive": false,
+    "spec": "test/*.test.js"
   },
   "repository": {
     "type": "git",
