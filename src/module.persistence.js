@@ -136,6 +136,38 @@ exports.isQuad = function(that) {
 };
 
 /**
+ * @param {Term|*} that
+ * @returns {true|false}
+ */
+exports.isSubject = function(that) {
+	return rdflib.isSubject(that);
+};
+
+/**
+ * @param {Term|*} that
+ * @returns {true|false}
+ */
+exports.isPredicate = function(that) {
+	return rdflib.isPredicate(that);
+};
+
+/**
+ * @param {Term|*} that
+ * @returns {true|false}
+ */
+exports.isObject = function(that) {
+	return rdflib.isRDFObject(that);
+};
+
+/**
+ * @param {Term|*} that
+ * @returns {true|false}
+ */
+exports.isGraph = function(that) {
+	return rdflib.isGraph(that);
+};
+
+/**
  * @param {Term} term
  * @returns {string}
  */
