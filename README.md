@@ -1,5 +1,11 @@
 # module.persistence
 
+- [InMemory](../module.persistence.inmemory)
+- [FileSystem](../module.persistence.filesystem)
+- [Redis](../module.persistence.redis)
+- [MongoDB](../module.persistence.mongodb)
+- [Neo4j](../module.persistence.neo4j)
+
 ## Interface
 
 - [RDF/JS: Data model specification](http://rdf.js.org/data-model-spec/)
