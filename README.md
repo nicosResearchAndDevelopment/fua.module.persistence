@@ -11,7 +11,7 @@
 - [RDF/JS: Data model specification](http://rdf.js.org/data-model-spec/)
 
 ```ts
-interface DataFactory {
+interface DataCoreFactory {
     namedNode(uri: string): NamedNode;
     blankNode(id?: string): BlankNode;
     literal(value: string,  langOrDt?: string | NamedNode): Literal;
@@ -21,7 +21,11 @@ interface DataFactory {
     
     fromTerm(original: Term): Term;
     fromQuad(original: Quad): Quad;
-    
+};
+```
+
+```ts
+interface DataFactory extends DataCoreFactory {
     isNamedNode(that: NamedNode | any): true | false;
     isBlankNode(that: BlankNode | any): true | false;
     isLiteral(that: Literal | any): true | false;
