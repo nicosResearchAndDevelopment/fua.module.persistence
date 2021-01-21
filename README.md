@@ -12,6 +12,93 @@
 - [RDF/JS: Dataset specification](https://rdf.js.org/dataset-spec/)
 - [RDF/JS: Stream interfaces](https://rdf.js.org/stream-spec/)
 
+### DataModel
+
+```ts
+/**
+ * @typedef {"NamedNode"|"BlankNode"|"Literal"|"Variable"|"DefaultGraph"|"Quad"} TermType
+ * @pattern /^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/
+ */
+interface Term {
+    termType: TermType;
+    value: string;
+    equals(other?: Term): boolean;
+};
+```
+
+```ts
+/**
+ * @typedef {string} UriString
+ * @pattern /^\w+:\S+$/
+ */
+interface NamedNode extends Term {
+    termType: "NamedNode";
+    value: UriString
+};
+```
+
+```ts
+/**
+ * @typedef {string} IdString
+ * @pattern /^\S+$/
+ */
+interface BlankNode extends Term {
+    termType: "BlankNode";
+    value: IdString
+};
+```
+
+```ts
+/**
+ * @typedef {string} LangString
+ * @pattern /^[a-z]{2}(?:-[a-z]{2})?$/i
+ */
+interface Literal extends Term {
+    termType: "Literal";
+    value: string,
+    language?: LangString,
+    datatype: NamedNode
+};
+```
+
+```ts
+/**
+ * @typedef {string} NameString
+ * @pattern /^[a-z]\w*$/i
+ */
+interface Variable extends Term {
+    termType: "Variable";
+    value: NameString
+};
+```
+
+```ts
+interface DefaultGraph extends Term {
+    termType: "DefaultGraph";
+    value: ""
+};
+```
+
+```ts
+interface Quad extends Term {
+    termType: "Quad";
+    value: "",
+    subject: NamedNode | BlankNode | Variable,
+    predicate: NamedNode | Variable,
+    object: NamedNode | BlankNode | Literal | Variable,
+    graph: DefaultGraph | NamedNode | Variable
+};
+```
+
+```ts
+interface DataQuad extends Quad {
+    subject: NamedNode | BlankNode,
+    predicate: NamedNode,
+    object: NamedNode | BlankNode | Literal,
+    graph: DefaultGraph | NamedNode
+};
+```
+
 ### DataFactory
 
 ```ts
