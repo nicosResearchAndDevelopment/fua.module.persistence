@@ -153,6 +153,29 @@ interface DatasetCoreFactory {
 };
 ```
 
+```ts
+interface Dataset extends DatasetCore {
+	addAll(quads: Iterable<Quad>): Dataset;
+	contains(other: Dataset): boolean;
+	deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
+	difference(other: Dataset): Dataset;
+	equals(other: Dataset): boolean;
+	every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+	filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
+	forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
+	import(stream: DataStream): Promise<Dataset>;
+	intersection(other: Dataset): Dataset;
+	map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
+	reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => any): any;
+	some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+	toArray(): Array<Quad>;
+	toCanonical(): string;
+	toStream(): DataStream;
+	toString(): string;
+	union(other: Dataset): Dataset;
+};
+```
+
 ### DataStore (Variant 1)
 
 ```ts
@@ -175,17 +198,17 @@ interface DataStoreCoreFactory {
 
 ```ts
 interface DataStream extends EventEmitter {
-    on(event: "prefix", callback: (prefix: string, ns: NamedNode) => any): DataStream;
-    on(event: "data", callback: (data: Quad) => any): DataStream;
-    on(event: "error", callback: (err: Error) => any): DataStream;
-    on(event: "end", callback: () => any): DataStream;
+    on(event: "prefix", callback: (prefix: string, ns: NamedNode) => void): DataStream;
+    on(event: "data", callback: (data: Quad) => void): DataStream;
+    on(event: "error", callback: (err: Error) => void): DataStream;
+    on(event: "end", callback: () => void): DataStream;
 };
 ```
 
 ```ts
 interface ResultEmitter extends EventEmitter {
-    on(event: "error", callback: (err: Error) => any): DataStream;
-    on(event: "end", callback: () => any): DataStream;
+    on(event: "error", callback: (err: Error) => void): DataStream;
+    on(event: "end", callback: () => void): DataStream;
 };
 ```
 
@@ -197,15 +220,15 @@ interface DataSource {
 
 ```ts
 interface DataSink {
-    import(stream: DataStream): EventEmitter<"end", "error">;
+    import(stream: DataStream): ResultEmitter;
 };
 ```
 
 ```ts
 interface DataStoreCore extends DataSource, DataSink {
-    remove(stream: DataStream): EventEmitter<"end", "error">;
-    removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): EventEmitter<"end", "error">;
-    deleteGraph(graph: Term | string): EventEmitter<"end", "error">;
+    remove(stream: DataStream): ResultEmitter;
+    removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): ResultEmitter;
+    deleteGraph(graph: Term | string): ResultEmitter;
 };
 ```
 
