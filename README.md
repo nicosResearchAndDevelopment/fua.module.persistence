@@ -88,24 +88,45 @@ interface DataStoreCoreFactory {
 
 ```ts
 interface DataStream extends EventEmitter {
-    // TODO
+    on(event: "prefix", callback: (prefix: string, ns: NamedNode) => any): DataStream;
+    on(event: "data", callback: (data: Quad) => any): DataStream;
+    on(event: "error", callback: (err: Error) => any): DataStream;
+    on(event: "end", callback: () => any): DataStream;
+};
+```
+
+```ts
+interface ResultEmitter extends EventEmitter {
+    on(event: "error", callback: (err: Error) => any): DataStream;
+    on(event: "end", callback: () => any): DataStream;
 };
 ```
 
 ```ts
 interface DataSource {
-    // TODO
+    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): DataStream;
 };
 ```
 
 ```ts
 interface DataSink {
-    // TODO
+    import(stream: DataStream): EventEmitter<"end", "error">;
 };
 ```
 
 ```ts
-interface DataStoreCore extends DataSource, DataSink, EventEmitter {
-    // TODO
+interface DataStoreCore extends DataSource, DataSink {
+    remove(stream: DataStream): EventEmitter<"end", "error">;
+    removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): EventEmitter<"end", "error">;
+    deleteGraph(graph: Term | string): EventEmitter<"end", "error">;
+};
+```
+
+```ts
+interface DataStore extends EventEmitter {
+	import(dataset: Dataset): Promise;
+	match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<Dataset>;
+	remove(dataset: Dataset): Promise;
+	removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise;
 };
 ```
