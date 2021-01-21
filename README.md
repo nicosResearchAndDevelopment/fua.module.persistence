@@ -156,23 +156,27 @@ interface DatasetCoreFactory {
 ```ts
 interface Dataset extends DatasetCore {
     addAll(quads: Iterable<Quad>): Dataset;
-    contains(other: Dataset): boolean;
     deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
-    difference(other: Dataset): Dataset;
-    equals(other: Dataset): boolean;
-    every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
-    filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
-    forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
     import(stream: DataStream): Promise<Dataset>;
-    intersection(other: Dataset): Dataset;
+    
+    equals(other: Dataset): boolean;
+    contains(other: Dataset): boolean;
+    every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    
+    forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
+    filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
     map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
     reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => any): any;
-    some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    
+    difference(other: Dataset): Dataset;
+    intersection(other: Dataset): Dataset;
+    union(other: Dataset): Dataset;
+    
     toArray(): Array<Quad>;
     toCanonical(): string;
     toStream(): DataStream;
     toString(): string;
-    union(other: Dataset): Dataset;
 };
 ```
 
@@ -234,9 +238,9 @@ interface DataStoreCore extends DataSource, DataSink {
 
 ```ts
 interface DataStore extends EventEmitter {
-	import(dataset: Dataset): Promise;
-	match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<Dataset>;
-	remove(dataset: Dataset): Promise;
-	removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise;
+    import(dataset: Dataset): Promise;
+    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<Dataset>;
+    remove(dataset: Dataset): Promise;
+    removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise;
 };
 ```
