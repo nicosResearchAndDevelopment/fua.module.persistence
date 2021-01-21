@@ -155,24 +155,24 @@ interface DatasetCoreFactory {
 
 ```ts
 interface Dataset extends DatasetCore {
-	addAll(quads: Iterable<Quad>): Dataset;
-	contains(other: Dataset): boolean;
-	deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
-	difference(other: Dataset): Dataset;
-	equals(other: Dataset): boolean;
-	every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
-	filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
-	forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
-	import(stream: DataStream): Promise<Dataset>;
-	intersection(other: Dataset): Dataset;
-	map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
-	reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => any): any;
-	some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
-	toArray(): Array<Quad>;
-	toCanonical(): string;
-	toStream(): DataStream;
-	toString(): string;
-	union(other: Dataset): Dataset;
+    addAll(quads: Iterable<Quad>): Dataset;
+    contains(other: Dataset): boolean;
+    deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
+    difference(other: Dataset): Dataset;
+    equals(other: Dataset): boolean;
+    every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
+    forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
+    import(stream: DataStream): Promise<Dataset>;
+    intersection(other: Dataset): Dataset;
+    map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
+    reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => any): any;
+    some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    toArray(): Array<Quad>;
+    toCanonical(): string;
+    toStream(): DataStream;
+    toString(): string;
+    union(other: Dataset): Dataset;
 };
 ```
 
