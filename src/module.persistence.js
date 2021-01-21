@@ -1,6 +1,6 @@
 const
 	{
-		Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad,
+		Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad, DataQuad,
 		isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
 		isQuad, isSubject, isPredicate, isObject, isGraph, isData,
 		isDataQuad, isDataSubject, isDataPredicate, isDataObject, isDataGraph
@@ -29,7 +29,7 @@ function termFromString(termStr) {
 }
 
 exports = module.exports = {
-	Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad,
+	Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad, DataQuad,
 	isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
 	isQuad, isSubject, isPredicate, isObject, isGraph, isData,
 	isDataQuad, isDataSubject, isDataPredicate, isDataObject, isDataGraph,

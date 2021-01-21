@@ -245,6 +245,25 @@ class Quad extends Term {
 
 } // Quad
 
+class DataQuad extends Quad {
+
+	/**
+	 * @param {Term} subject
+	 * @param {Term} predicate
+	 * @param {Term} object
+	 * @param {Term} graph
+	 */
+	constructor(subject, predicate, object, graph) {
+		_assert(isDataSubject(subject), 'DataQuad#constructor : invalid subject', TypeError);
+		_assert(isDataPredicate(predicate), 'DataQuad#constructor : invalid predicate', TypeError);
+		_assert(isDataObject(object), 'DataQuad#constructor : invalid object', TypeError);
+		_assert(isDataGraph(graph), 'DataQuad#constructor : invalid graph', TypeError);
+
+		super(subject, predicate, object, graph);
+	} // DataQuad#constructor
+
+} // DataQuad
+
 //#endregion
 //#region >> METHODS
 
@@ -348,11 +367,13 @@ function isData(term) {
  * @returns {boolean}
  */
 function isDataQuad(term) {
-	return isQuad(term)
+	return (term instanceof DataQuad) || (
+		isQuad(term)
 		&& !isVariable(term.subject)
 		&& !isVariable(term.predicate)
 		&& !isVariable(term.object)
-		&& !isVariable(term.graph);
+		&& !isVariable(term.graph)
+	);
 } // isDataQuad
 
 /**
@@ -390,7 +411,7 @@ function isDataGraph(term) {
 //#endregion
 
 exports = module.exports = {
-	Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad,
+	Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad, DataQuad,
 	isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
 	isQuad, isSubject, isPredicate, isObject, isGraph, isData,
 	isDataQuad, isDataSubject, isDataPredicate, isDataObject, isDataGraph
