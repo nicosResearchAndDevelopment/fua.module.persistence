@@ -12,7 +12,9 @@
 - [RDF/JS: Dataset specification](https://rdf.js.org/dataset-spec/)
 - [RDF/JS: Stream interfaces](https://rdf.js.org/stream-spec/)
 
-### DataModel
+### Data Model
+
+#### Term
 
 ```ts
 /**
@@ -26,6 +28,8 @@ interface Term {
 };
 ```
 
+#### NamedNode
+
 ```ts
 /**
  * @typedef {string} UriString
@@ -37,6 +41,8 @@ interface NamedNode extends Term {
 };
 ```
 
+#### BlankNode
+
 ```ts
 /**
  * @typedef {string} IdString
@@ -47,6 +53,8 @@ interface BlankNode extends Term {
     value: IdString
 };
 ```
+
+#### Literal
 
 ```ts
 /**
@@ -61,6 +69,8 @@ interface Literal extends Term {
 };
 ```
 
+#### Variable
+
 ```ts
 /**
  * @typedef {string} NameString
@@ -72,12 +82,16 @@ interface Variable extends Term {
 };
 ```
 
+#### DefaultGraph
+
 ```ts
 interface DefaultGraph extends Term {
     termType: "DefaultGraph";
     value: ""
 };
 ```
+
+#### Quad
 
 ```ts
 interface Quad extends Term {
@@ -90,6 +104,14 @@ interface Quad extends Term {
 };
 ```
 
+#### DataQuad
+
+- NOTE: still to be evaluated
+    - maybe good
+    - maybe other method to sort out variables
+    - maybe kick out variables
+    - maybe leave it to the stores
+
 ```ts
 interface DataQuad extends Quad {
     subject: NamedNode | BlankNode,
@@ -99,10 +121,82 @@ interface DataQuad extends Quad {
 };
 ```
 
-### DataFactory
+### Persistence Model
+
+#### Dataset
 
 ```ts
-interface DataFactoryCore {
+interface Dataset extends Iterable<Quad> {
+    // attributes
+    size: number;
+    
+    // extracting methods
+    forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
+    filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
+    map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
+    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
+    union(other: Dataset): Dataset;
+    intersection(other: Dataset): Dataset;
+    difference(other: Dataset): Dataset;
+    
+    // mutating methods
+    add(quads: Quad | Iterable<Quad>): number;
+    addStream(stream: Readable<Quad>): Promise<number>;
+    delete(quads: Quad | Iterable<Quad>): number;
+    deleteStream(stream: Readable<Quad>): Promise<number>;
+    deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): number;
+
+    // boolean operators
+    has(quads: Quad | Iterable<Quad>): boolean;
+    equals(other: Dataset): boolean;
+    contains(other: Dataset): boolean;
+    every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
+    
+    // output alternatives
+    toArray(): Array<Quad>;
+    toStream(): Readable<Quad>;
+    toString(): string;
+};
+```
+
+#### DataStore
+
+```ts
+interface DataStore extends EventEmitter {
+    // attribute queries
+    size(): Promise<number>;
+
+    // extracting queries
+    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<Dataset>;
+    
+    // mutating queries
+    add(quads: Quad | Iterable<Quad>): Promise<number>;
+    addStream(stream: Readable<Quad>): Promise<number>;
+    delete(quads: Quad | Iterable<Quad>): Promise<number>;
+    deleteStream(stream: Readable<Quad>): Promise<number>;
+    deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<number>;
+    
+    // boolean operators
+    has(quads: Quad | Iterable<Quad>): Promise<boolean>;
+    
+    // events
+    on(event: "added", callback: (quad: Quad) => void): this;
+    on(event: "deleted", callback: (quad: Quad) => void): this;
+    on(event: "error", callback: (err: Error) => void): this;
+};
+```
+
+### Parser Model
+
+- TODO
+
+### Factory Model
+
+#### DataFactory
+
+```ts
+interface DataFactory {
     namedNode(uri: string): NamedNode;
     blankNode(id?: string): BlankNode;
     literal(value: string,  langOrDt?: string | NamedNode): Literal;
@@ -112,11 +206,8 @@ interface DataFactoryCore {
     
     fromTerm(original: Term): Term;
     fromQuad(original: Quad): Quad;
-};
-```
-
-```ts
-interface DataFactory extends DataFactoryCore {
+    // fromString(termStr: string): Term;
+    
     isNamedNode(that: NamedNode | any): true | false;
     isBlankNode(that: BlankNode | any): true | false;
     isLiteral(that: Literal | any): true | false;
@@ -128,119 +219,35 @@ interface DataFactory extends DataFactoryCore {
     isPredicate(that: NamedNode | Variable | any): true | false;
     isObject(that: NamedNode | BlankNode | Variable | Literal | any): true | false;
     isGraph(that: NamedNode | DefaultGraph | any): true | false;
-    
+
+    // NOTE: still to be evaluated
+    isData(that: NamedNode | BlankNode | Literal | DefaultGraph | any): true | false;
+    isDataQuad(that: Quad | DataQuad | any): true | false;
+    isDataSubject(that: NamedNode | BlankNode | any): true | false;
+    isDataPredicate(that: NamedNode | any): true | false;
+    isDataObject(that: NamedNode | BlankNode | Literal | any): true | false;
+    isDataGraph(that: NamedNode | DefaultGraph | any): true | false;
+
+    // NOTE: still to be evaluated
     termToString(term: Term): string;
     termFromString(termStr: string): Term;
-    fromString(termStr: string): Term;
 };
 ```
 
-### Dataset
+#### DatasetFactory
 
 ```ts
-interface DatasetCore extends Iterable<Quad> {
-    size: number;
-    add(quad: Quad): boolean;
-    delete(quad: Quad): boolean;
-    has(quad: Quad): boolean;
-    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): DatasetCore;
+interface DatasetFactory {
+    dataset(quads?: Iterable<Quad>): Dataset;
+    isDataset(that: Dataset | any): true | false;
 };
 ```
 
-```ts
-interface DatasetCoreFactory {
-    dataset(quads?: Iterable<Quad>): DatasetCore;
-};
-```
+#### DataStoreFactory
 
 ```ts
-interface Dataset extends DatasetCore {
-    addAll(quads: Iterable<Quad>): Dataset;
-    deleteMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
-    import(stream: DataStream): Promise<Dataset>;
-    
-    equals(other: Dataset): boolean;
-    contains(other: Dataset): boolean;
-    every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
-    some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
-    
-    forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
-    filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
-    map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
-    reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => any): any;
-    
-    difference(other: Dataset): Dataset;
-    intersection(other: Dataset): Dataset;
-    union(other: Dataset): Dataset;
-    
-    toArray(): Array<Quad>;
-    toCanonical(): string;
-    toStream(): DataStream;
-    toString(): string;
-};
-```
-
-### DataStore (Variant 1)
-
-```ts
-interface DataStoreCore extends DatasetCore, EventEmitter {
-    size(): Promise<number>;
-    add(quad: Quad): Promise<boolean>;
-    delete(quad: Quad): Promise<boolean>;
-    has(quad: Quad): Promise<boolean>;
-    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<DatasetCore>;
-};
-```
-
-```ts
-interface DataStoreCoreFactory {
-    store(graph: NamedNode): DataStoreCore;
-};
-```
-
-### DataStore (Variant 2)
-
-```ts
-interface DataStream extends EventEmitter {
-    on(event: "prefix", callback: (prefix: string, ns: NamedNode) => void): DataStream;
-    on(event: "data", callback: (data: Quad) => void): DataStream;
-    on(event: "error", callback: (err: Error) => void): DataStream;
-    on(event: "end", callback: () => void): DataStream;
-};
-```
-
-```ts
-interface ResultEmitter extends EventEmitter {
-    on(event: "error", callback: (err: Error) => void): DataStream;
-    on(event: "end", callback: () => void): DataStream;
-};
-```
-
-```ts
-interface DataSource {
-    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): DataStream;
-};
-```
-
-```ts
-interface DataSink {
-    import(stream: DataStream): ResultEmitter;
-};
-```
-
-```ts
-interface DataStoreCore extends DataSource, DataSink {
-    remove(stream: DataStream): ResultEmitter;
-    removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): ResultEmitter;
-    deleteGraph(graph: Term | string): ResultEmitter;
-};
-```
-
-```ts
-interface DataStore extends EventEmitter {
-    import(dataset: Dataset): Promise;
-    match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise<Dataset>;
-    remove(dataset: Dataset): Promise;
-    removeMatches(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Promise;
+interface DataStoreFactory {
+    dataStore(options: object): DataStore;
+    isDataStore(that: DataStore | any): true | false;
 };
 ```
