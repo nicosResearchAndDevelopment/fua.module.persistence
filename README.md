@@ -20,11 +20,15 @@
 /**
  * @typedef {"NamedNode"|"BlankNode"|"Literal"|"Variable"|"DefaultGraph"|"Quad"} TermType
  * @pattern /^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/
+ * @typedef {string} TermString
+ * @typedef {JSON} JsonTerm
  */
 interface Term {
     termType: TermType;
     value: string;
     equals(other?: Term): boolean;
+    // toString(): TermString;
+    // toJSON(): JsonTerm;
 };
 ```
 
@@ -32,12 +36,14 @@ interface Term {
 
 ```ts
 /**
- * @typedef {string} UriString
+ * @typedef {string} IriString
  * @pattern /^\w+:\S+$/
  */
 interface NamedNode extends Term {
     termType: "NamedNode";
-    value: UriString
+    value: IriString;
+    // toString(): `<${IriString}>`;
+    // toJSON(): { "@id": IriString };
 };
 ```
 
@@ -50,7 +56,9 @@ interface NamedNode extends Term {
  */
 interface BlankNode extends Term {
     termType: "BlankNode";
-    value: IdString
+    value: IdString;
+    // toString(): `_:${IdString}`;
+    // toJSON(): { "@id": `_:${IdString}` };
 };
 ```
 
@@ -63,9 +71,12 @@ interface BlankNode extends Term {
  */
 interface Literal extends Term {
     termType: "Literal";
-    value: string,
-    language?: LangString,
-    datatype: NamedNode
+    value: string;
+    language?: LangString;
+    datatype: NamedNode;
+    equals(other?: Literal): boolean;
+    // toString(): `"""${NameString}"""@${LangString}^^<${IriString}>`;
+    // toJSON(): { "@value": string, "@language"?: LangString, "@type"?: IriString };
 };
 ```
 
@@ -78,7 +89,9 @@ interface Literal extends Term {
  */
 interface Variable extends Term {
     termType: "Variable";
-    value: NameString
+    value: NameString;
+    // toString(): `?${NameString}`;
+    // toJSON(): { "@id": `?${NameString}` };
 };
 ```
 
@@ -87,7 +100,9 @@ interface Variable extends Term {
 ```ts
 interface DefaultGraph extends Term {
     termType: "DefaultGraph";
-    value: ""
+    value: "";
+    // toString(): "";
+    // toJSON(): null;
 };
 ```
 
@@ -96,30 +111,55 @@ interface DefaultGraph extends Term {
 ```ts
 interface Quad extends Term {
     termType: "Quad";
-    value: "",
-    subject: NamedNode | BlankNode | Variable,
-    predicate: NamedNode | Variable,
-    object: NamedNode | BlankNode | Literal | Variable,
-    graph: DefaultGraph | NamedNode | Variable
+    value: "";
+    subject: NamedNode | BlankNode | Variable;
+    predicate: NamedNode | Variable;
+    object: NamedNode | BlankNode | Literal | Variable;
+    graph: DefaultGraph | NamedNode | Variable;
+    equals(other?: Quad): boolean;
+    // toString(): `${TermString} ${TermString} ${TermString} ${TermString} .`;
+    // toJSON(): { subject: Term, predicate: Term, object: Term, graph: Term };
 };
 ```
 
-#### DataQuad
+### Parsing Model
 
-- NOTE: still to be evaluated
-    - maybe good
-    - maybe other method to sort out variables
-    - maybe kick out variables
-    - maybe leave it to the stores
+#### DataParser
+
+> __REM:__
+> - to parse between textual representations and quads (or quad iterables)
+> - to pipe between textual streams and quad streams
+> - to parse between singular quads/terms and other formats
+> - must replace toString/toJSON methods and also termFromId/fromString and termToId
+> - tokenization with [tokenizr](https://www.npmjs.com/package/tokenizr)
 
 ```ts
-interface DataQuad extends Quad {
-    subject: NamedNode | BlankNode,
-    predicate: NamedNode,
-    object: NamedNode | BlankNode | Literal,
-    graph: DefaultGraph | NamedNode
+interface DataParser<DataType> {
+    // toTerm(input: DataType<Term>, options?: object): Term;
+    // toQuad(input: DataType<Quad>, options?: object): Quad;
+    // toDataset(input: DataType<Graph>, options?: object): Dataset;
+    // toQuadStream(input: DataType<Graph>, options?: object): Readable<Quad>;
+    // toQuadPipeline(stream: Readable<DataType<Graph>>, options?: object): Readable<Quad>;
+    //
+    // fromTerm(input: Term, options?: object): DataType<Term>;
+    // fromQuad(input: Quad, options?: object): DataType<Quad>;
+    // fromDataset(input: Dataset, options?: object): DataType<Graph>;
+    // fromQuadStream(stream: Readable<Quad>, options?: object): DataType<Graph>;
+    // fromQuadPipeline(stream: Readable<Quad>, options?: object): Readable<DataType<Graph>>;
+  
+  // TODO
 };
 ```
+
+#### NQuadParser
+
+```ts
+interface NQuadParser extends DataParser {
+    // TODO
+};
+```
+
+> TODO
 
 ### Persistence Model
 
@@ -134,10 +174,18 @@ interface Dataset extends Iterable<Quad> {
     forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
     filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
     map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
+    // reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => Quad, acc?: any): any;
+    
     match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
     union(other: Dataset): Dataset;
     intersection(other: Dataset): Dataset;
     difference(other: Dataset): Dataset;
+    
+    // quads(): Iterator<Quad>;
+    toArray(): Array<Quad>;
+    toStream(): Readable<Quad>;
+    // toString(): string;
+    // toJSON(): Array<JsonTerm>;
     
     // mutating methods
     add(quads: Quad | Iterable<Quad>): number;
@@ -152,11 +200,6 @@ interface Dataset extends Iterable<Quad> {
     contains(other: Dataset): boolean;
     every(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
     some(iteratee: (quad: Quad, dataset: Dataset) => boolean): boolean;
-    
-    // output alternatives
-    toArray(): Array<Quad>;
-    toStream(): Readable<Quad>;
-    toString(): string;
 };
 ```
 
@@ -187,17 +230,13 @@ interface DataStore extends EventEmitter {
 };
 ```
 
-### Parser Model
-
-- TODO
-
 ### Factory Model
 
 #### DataFactory
 
 ```ts
 interface DataFactory {
-    namedNode(uri: string): NamedNode;
+    namedNode(iri: string): NamedNode;
     blankNode(id?: string): BlankNode;
     literal(value: string,  langOrDt?: string | NamedNode): Literal;
     variable(name: string): Variable;
@@ -206,7 +245,8 @@ interface DataFactory {
     
     fromTerm(original: Term): Term;
     fromQuad(original: Quad): Quad;
-    // fromString(termStr: string): Term;
+    // fromString(termString: TermString): Term;
+    // fromJSON(jsonTerm: JsonTerm): Term;
     
     isNamedNode(that: NamedNode | any): true | false;
     isBlankNode(that: BlankNode | any): true | false;
@@ -217,20 +257,8 @@ interface DataFactory {
     
     isSubject(that: NamedNode | BlankNode | Variable | any): true | false;
     isPredicate(that: NamedNode | Variable | any): true | false;
-    isObject(that: NamedNode | BlankNode | Variable | Literal | any): true | false;
-    isGraph(that: NamedNode | DefaultGraph | any): true | false;
-
-    // NOTE: still to be evaluated
-    isData(that: NamedNode | BlankNode | Literal | DefaultGraph | any): true | false;
-    isDataQuad(that: Quad | DataQuad | any): true | false;
-    isDataSubject(that: NamedNode | BlankNode | any): true | false;
-    isDataPredicate(that: NamedNode | any): true | false;
-    isDataObject(that: NamedNode | BlankNode | Literal | any): true | false;
-    isDataGraph(that: NamedNode | DefaultGraph | any): true | false;
-
-    // NOTE: still to be evaluated
-    termToString(term: Term): string;
-    termFromString(termStr: string): Term;
+    isObject(that: NamedNode | BlankNode | Literal | Variable | any): true | false;
+    isGraph(that: DefaultGraph | NamedNode | Variable | any): true | false;
 };
 ```
 
@@ -249,5 +277,11 @@ interface DatasetFactory {
 interface DataStoreFactory {
     dataStore(options: object): DataStore;
     isDataStore(that: DataStore | any): true | false;
+    
+    validSubject(that: Term | any): true | false;
+    validPredicate(that: Term | any): true | false;
+    validObject(that: Term | any): true | false;
+    validGraph(that: Term | any): true | false;
+    validQuad(that: Quad | any): true | false;
 };
 ```
