@@ -20,15 +20,11 @@
 /**
  * @typedef {"NamedNode"|"BlankNode"|"Literal"|"Variable"|"DefaultGraph"|"Quad"} TermType
  * @pattern /^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/
- * @typedef {string} TermString
- * @typedef {JSON} JsonTerm
  */
 interface Term {
     termType: TermType;
     value: string;
     equals(other?: Term): boolean;
-    // toString(): TermString;
-    // toJSON(): JsonTerm;
 };
 ```
 
@@ -42,8 +38,6 @@ interface Term {
 interface NamedNode extends Term {
     termType: "NamedNode";
     value: IriString;
-    // toString(): `<${IriString}>`;
-    // toJSON(): { "@id": IriString };
 };
 ```
 
@@ -57,8 +51,6 @@ interface NamedNode extends Term {
 interface BlankNode extends Term {
     termType: "BlankNode";
     value: IdString;
-    // toString(): `_:${IdString}`;
-    // toJSON(): { "@id": `_:${IdString}` };
 };
 ```
 
@@ -75,8 +67,6 @@ interface Literal extends Term {
     language?: LangString;
     datatype: NamedNode;
     equals(other?: Literal): boolean;
-    // toString(): `"""${NameString}"""@${LangString}^^<${IriString}>`;
-    // toJSON(): { "@value": string, "@language"?: LangString, "@type"?: IriString };
 };
 ```
 
@@ -90,8 +80,6 @@ interface Literal extends Term {
 interface Variable extends Term {
     termType: "Variable";
     value: NameString;
-    // toString(): `?${NameString}`;
-    // toJSON(): { "@id": `?${NameString}` };
 };
 ```
 
@@ -101,8 +89,6 @@ interface Variable extends Term {
 interface DefaultGraph extends Term {
     termType: "DefaultGraph";
     value: "";
-    // toString(): "";
-    // toJSON(): null;
 };
 ```
 
@@ -117,44 +103,24 @@ interface Quad extends Term {
     object: NamedNode | BlankNode | Literal | Variable;
     graph: DefaultGraph | NamedNode | Variable;
     equals(other?: Quad): boolean;
-    // toString(): `${TermString} ${TermString} ${TermString} ${TermString} .`;
-    // toJSON(): { subject: Term, predicate: Term, object: Term, graph: Term };
 };
 ```
 
 ### Parsing Model
 
-#### DataParser
-
 > __REM:__
-> - to parse between textual representations and quads (or quad iterables)
+> - to parse between textual representations and quads (or datasets/quad iterables)
 > - to pipe between textual streams and quad streams
+> - supported representations: ttl, n3, rdf-xml, json-ld, n-quads
 > - to parse between singular quads/terms and other formats
-> - must replace toString/toJSON methods and also termFromId/fromString and termToId
+> - should replace termToId/termFromId methods
 > - tokenization with [tokenizr](https://www.npmjs.com/package/tokenizr)
-
-```ts
-interface DataParser<DataType> {
-    // toTerm(input: DataType<Term>, options?: object): Term;
-    // toQuad(input: DataType<Quad>, options?: object): Quad;
-    // toDataset(input: DataType<Graph>, options?: object): Dataset;
-    // toQuadStream(input: DataType<Graph>, options?: object): Readable<Quad>;
-    // toQuadPipeline(stream: Readable<DataType<Graph>>, options?: object): Readable<Quad>;
-    //
-    // fromTerm(input: Term, options?: object): DataType<Term>;
-    // fromQuad(input: Quad, options?: object): DataType<Quad>;
-    // fromDataset(input: Dataset, options?: object): DataType<Graph>;
-    // fromQuadStream(stream: Readable<Quad>, options?: object): DataType<Graph>;
-    // fromQuadPipeline(stream: Readable<Quad>, options?: object): Readable<DataType<Graph>>;
-  
-  // TODO
-};
-```
+> - to generate a meshed graph structure from a dataset/quad stream
 
 #### NQuadParser
 
 ```ts
-interface NQuadParser extends DataParser {
+interface NQuadParser {
     // TODO
 };
 ```
@@ -174,18 +140,16 @@ interface Dataset extends Iterable<Quad> {
     forEach(iteratee: (quad: Quad, dataset: Dataset) => void): void;
     filter(iteratee: (quad: Quad, dataset: Dataset) => boolean): Dataset;
     map(iteratee: (quad: Quad, dataset: Dataset) => Quad): Dataset;
-    // reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => Quad, acc?: any): any;
+    reduce(iteratee: (acc: any, quad: Quad, dataset: Dataset) => Quad, acc?: any): any;
     
     match(subject?: Term, predicate?: Term, object?: Term, graph?: Term): Dataset;
     union(other: Dataset): Dataset;
     intersection(other: Dataset): Dataset;
     difference(other: Dataset): Dataset;
     
-    // quads(): Iterator<Quad>;
+    quads(): Iterator<Quad>;
     toArray(): Array<Quad>;
     toStream(): Readable<Quad>;
-    // toString(): string;
-    // toJSON(): Array<JsonTerm>;
     
     // mutating methods
     add(quads: Quad | Iterable<Quad>): number;
@@ -235,6 +199,9 @@ interface DataStore extends EventEmitter {
 #### DataFactory
 
 ```ts
+/**
+ * @typedef {string} TermIdentifier
+ */
 interface DataFactory {
     namedNode(iri: string): NamedNode;
     blankNode(id?: string): BlankNode;
@@ -245,9 +212,8 @@ interface DataFactory {
     
     fromTerm(original: Term): Term;
     fromQuad(original: Quad): Quad;
-    // fromString(termString: TermString): Term;
-    // fromJSON(jsonTerm: JsonTerm): Term;
-    
+
+    isTerm(that: Term | any): true | false;
     isNamedNode(that: NamedNode | any): true | false;
     isBlankNode(that: BlankNode | any): true | false;
     isLiteral(that: Literal | any): true | false;
@@ -268,6 +234,14 @@ interface DataFactory {
 interface DatasetFactory {
     dataset(quads?: Iterable<Quad>): Dataset;
     isDataset(that: Dataset | any): true | false;
+    
+    termToId(term: Term): TermIdentifier;
+    termFromId(termId: TermIdentifier): Term;
+    
+    // TODO: where to put the previously extended dataset methods?
+    shaclValidate(data: Dataset, shapes: Dataset): Dataset;
+    generateGraph(source: Dataset, prefixes: Object<string, IriString>, options?: { compact?: boolean, meshed?: boolean, blanks?: boolean}): Map<IriString, Object>;
+    // REM: parsers should provide methods to import or export other formats
 };
 ```
 
@@ -275,7 +249,7 @@ interface DatasetFactory {
 
 ```ts
 interface DataStoreFactory {
-    dataStore(options: object): DataStore;
+    dataStore(options: Object): DataStore;
     isDataStore(that: DataStore | any): true | false;
     
     validSubject(that: Term | any): true | false;
