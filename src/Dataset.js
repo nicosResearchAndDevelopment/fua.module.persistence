@@ -17,6 +17,7 @@ class TermIndex {
         this.size = 0;
         this.keys = Object.create(null);
         this.terms = Object.create(null);
+        this.terms[0] = null;
     } // QuadIndex#constructor
 
     /**
@@ -182,6 +183,8 @@ class Dataset {
     #quads = new QuadIndex();
 
     // TODO evaluate, whether Dataset and DatasetFactory should move from module.persistence.inmemory to here
+    // IDEA add the quad as last param to the QuadIndex, so it can be retrieved with entries
+    // IDEA delete a term by setting TermIndex#terms[key] to null, so you can recover it later and dont loose the proper key
 
     * [Symbol.iterator]() {
         const
