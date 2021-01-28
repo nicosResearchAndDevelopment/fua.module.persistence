@@ -106,27 +106,6 @@ interface Quad extends Term {
 };
 ```
 
-### Parsing Model
-
-> __REM:__
-> - to parse between textual representations and quads (or datasets/quad iterables)
-> - to pipe between textual streams and quad streams
-> - supported representations: ttl, n3, rdf-xml, json-ld, n-quads
-> - to parse between singular quads/terms and other formats
-> - should replace termToId/termFromId methods
-> - tokenization with [tokenizr](https://www.npmjs.com/package/tokenizr)
-> - to generate a meshed graph structure from a dataset/quad stream
-
-#### NQuadParser
-
-```ts
-interface NQuadParser {
-    // TODO
-};
-```
-
-> TODO
-
 ### Persistence Model
 
 #### Dataset
@@ -195,6 +174,14 @@ interface DataStore extends EventEmitter {
 ```
 
 ### Factory Model
+
+> __TODO: Parser__
+> - to parse between textual representations and datasets
+> - to pipe between textual streams and quad streams
+> - should support representations: ttl, n3, rdf-xml, json-ld, n-quads, s-rdf
+> - might replace termToId/termFromId methods
+> - tokenization with [tokenizr](https://www.npmjs.com/package/tokenizr)
+> - to generate a meshed graph structure from a dataset/quad stream
 
 #### DataFactory
 
