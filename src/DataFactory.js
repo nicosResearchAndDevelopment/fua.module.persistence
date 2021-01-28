@@ -2,19 +2,11 @@ const
     { Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad } = require('./DataModel.js'),
     graph_defaultGraph = new DefaultGraph(),
     dt_string = new NamedNode('http://www.w3.org/2001/XMLSchema#string'),
-    dt_langString = new NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
-
-//#region >> PRIVATE
-
-const {
-    _assert, _isString, _isObject
-} = require('./util.js');
-
-//#endregion << PRIVATE
-//#region >> METHODS
+    dt_langString = new NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString'),
+    { _assert, _isString, _isObject } = require('./util.js');
 
 /**
- * @param {IriString} iri
+ * @param {string} iri
  * @returns {NamedNode}
  */
 function namedNode(iri) {
@@ -22,7 +14,7 @@ function namedNode(iri) {
 } // namedNode
 
 /**
- * @param {IdString} id
+ * @param {string} id
  * @returns {BlankNode}
  */
 function blankNode(id) {
@@ -31,7 +23,7 @@ function blankNode(id) {
 
 /**
  * @param {string} value
- * @param {LangString|NamedNode} [langOrDt=NamedNode<"http://www.w3.org/2001/XMLSchema#string">]
+ * @param {string|NamedNode} [langOrDt=NamedNode<"http://www.w3.org/2001/XMLSchema#string">]
  * @returns {Literal}
  */
 function literal(value, langOrDt = dt_string) {
@@ -41,7 +33,7 @@ function literal(value, langOrDt = dt_string) {
 } // literal
 
 /**
- * @param {NameString} name
+ * @param {string} name
  * @returns {Variable}
  */
 function variable(name) {
@@ -62,7 +54,7 @@ function defaultGraph() {
  * @param {Term} [graph=DefaultGraph<>]
  * @returns {Quad}
  */
-function quad(subject, predicate, object, graph = defaultGraph()) {
+function quad(subject, predicate, object, graph = graph_defaultGraph) {
     return new Quad(subject, predicate, object, graph);
 } // quad
 
@@ -72,6 +64,7 @@ function quad(subject, predicate, object, graph = defaultGraph()) {
  */
 function fromTerm(original) {
     _assert(_isObject(original), 'fromTerm : invalid original', TypeError);
+    if (original instanceof Term) return original;
     _assert(_isString(original.termType), 'fromTerm : invalid termType', TypeError);
     switch (original.termType) {
         case 'NamedNode':
@@ -96,6 +89,7 @@ function fromTerm(original) {
  */
 function fromQuad(original) {
     _assert(_isObject(original), 'fromQuad : invalid original', TypeError);
+    if (original instanceof Quad) return original;
     _assert(!original.termType || original.termType === 'Quad', 'fromQuad : invalid termType', TypeError);
     return quad(
         fromTerm(original.subject),
@@ -105,9 +99,7 @@ function fromQuad(original) {
     );
 } // fromQuad
 
-//#endregion << METHODS
-
-exports = module.exports = {
+module.exports = {
     namedNode, blankNode, literal, variable, defaultGraph, quad,
     fromTerm, fromQuad
 }; // exports 

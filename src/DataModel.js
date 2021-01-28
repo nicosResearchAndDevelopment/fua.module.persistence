@@ -1,62 +1,23 @@
-//#region >> PRIVATE
+const
+    { _assert, _lockProp, _strValidator, _isString } = require('./util.js'),
+    // TODO rework patterns, e.g. IRI pattern, to match specifications
+    _isIRI = _strValidator(/^\w+:\S+$/),
+    _isId = _strValidator(/^\S+$/),
+    _isName = _strValidator(/^[a-z]\w*$/i),
+    _isLang = _strValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i)
+;
 
-const {
-    _assert, _lockProp, _strValidator, _isString
-} = require('./util.js');
-
-/**
- * @typedef {"NamedNode"|"BlankNode"|"Literal"|"Variable"|"DefaultGraph"|"Quad"} TermType
- * @pattern /^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/
- */
-// const _isTermType = _strValidator(/^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/);
-const _isTermType = _isString;
-
-// TODO rework patterns, e.g. IRI pattern, to match specifications
-
-/**
- * @typedef {string} IriString
- * @pattern /^\w+:\S+$/
- */
-const _isIriString = _strValidator(/^\w+:\S+$/);
-
-/**
- * @typedef {string} IdString
- * @pattern /^\S+$/
- */
-const _isIdString = _strValidator(/^\S+$/);
-
-/**
- * @typedef {string} NameString
- * @pattern /^[a-z]\w*$/i
- */
-const _isNameString = _strValidator(/^[a-z]\w*$/i);
-
-/**
- * @typedef {string} LangString
- * @pattern /^[a-z]{2}(?:-[a-z]{2})?$/i
- */
-const _isLangString = _strValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i);
-
-//#endregion << PRIVATE
-//#region >> CLASSES
-
-/**
- * @typedef Term
- * @property {TermType} termType
- * @property {string} value
- */
 class Term {
 
     /**
-     * @param {TermType} termType
+     * @param {string} termType
      * @param {string} value
      * @abstract
      */
     constructor(termType, value) {
         _assert(new.target !== Term, 'Term#constructor : Term is abstract');
-        _assert(_isTermType(termType), 'Term#constructor : invalid termType', TypeError);
+        _assert(_isString(termType), 'Term#constructor : invalid termType', TypeError);
         _assert(_isString(value), 'Term#constructor : invalid value', TypeError);
-
         this.termType = termType;
         this.value = value;
         _lockProp(this, 'value', 'termType');
@@ -74,66 +35,46 @@ class Term {
 
 } // Term
 
-/**
- * @typedef {Term} NamedNode
- * @property {"NamedNode"} termType
- * @property {IriString} value
- */
 class NamedNode extends Term {
 
     /**
-     * @param {IriString} iri
+     * @param {string} iri
      */
     constructor(iri) {
-        _assert(_isIriString(iri), 'NamedNode#constructor : invalid iri', TypeError);
-
+        _assert(_isIRI(iri), 'NamedNode#constructor : invalid iri', TypeError);
         super('NamedNode', iri);
     } // NamedNode#constructor
 
 } // NamedNode
 
-/**
- * @typedef {Term} BlankNode
- * @property {"BlankNode"} termType
- * @property {IdString} value
- */
 class BlankNode extends Term {
 
     /**
-     * @param {IdString} id
+     * @param {string} id
      */
     constructor(id) {
-        _assert(_isIdString(id), 'BlankNode#constructor : invalid id', TypeError);
-
+        _assert(_isId(id), 'BlankNode#constructor : invalid id', TypeError);
         super('BlankNode', id);
     } // BlankNode#constructor
 
 } // BlankNode
 
-/**
- * @typedef {Term} Literal
- * @property {"Literal"} termType
- * @property {string} value
- * @property {LangString} language
- * @property {NamedNode} datatype
- */
 class Literal extends Term {
 
     /**
      * @param {string} value
-     * @param {LangString} [language]
+     * @param {string} language
      * @param {NamedNode} datatype
      */
     constructor(value, language, datatype) {
         if (language) {
-            _assert(_isLangString(language), 'Literal#constructor : invalid language', TypeError);
+            _assert(_isLang(language), 'Literal#constructor : invalid language', TypeError);
             _assert(isNamedNode(datatype) && datatype.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString',
                 'Literal#constructor : invalid datatype', TypeError);
         } else {
+            _assert(_isString(language), 'Literal#constructor : invalid language', TypeError);
             _assert(isNamedNode(datatype), 'Literal#constructor : invalid datatype', TypeError);
-            language = '';
         }
-
         super('Literal', value);
         this.language = language;
         this.datatype = datatype;
@@ -152,29 +93,18 @@ class Literal extends Term {
 
 } // Literal
 
-/**
- * @typedef {Term} Variable
- * @property {"Variable"} termType
- * @property {NameString} value
- */
 class Variable extends Term {
 
     /**
-     * @param {NameString} name
+     * @param {string} name
      */
     constructor(name) {
-        _assert(_isNameString(name), 'Variable#constructor : invalid name', TypeError);
-
+        _assert(_isName(name), 'Variable#constructor : invalid name', TypeError);
         super('Variable', name);
     } // Variable#constructor
 
 } // Variable
 
-/**
- * @typedef {Term} DefaultGraph
- * @property {"DefaultGraph"} termType
- * @property {""} value
- */
 class DefaultGraph extends Term {
 
     constructor() {
@@ -183,15 +113,6 @@ class DefaultGraph extends Term {
 
 } // DefaultGraph
 
-/**
- * @typedef {Term} Quad
- * @property {"Quad"} termType
- * @property {""} value
- * @property {Term} subject
- * @property {Term} predicate
- * @property {Term} object
- * @property {Term} graph
- */
 class Quad extends Term {
 
     /**
@@ -205,7 +126,6 @@ class Quad extends Term {
         _assert(isPredicate(predicate), 'Quad#constructor : invalid predicate', TypeError);
         _assert(isObject(object), 'Quad#constructor : invalid object', TypeError);
         _assert(isGraph(graph), 'Quad#constructor : invalid graph', TypeError);
-
         super('Quad', '');
         this.subject = subject;
         this.predicate = predicate;
@@ -228,100 +148,51 @@ class Quad extends Term {
 
 } // Quad
 
-//#endregion << CLASSES
-//#region >> METHODS
-
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isTerm(term) {
     return term instanceof Term;
 } // isTerm
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isNamedNode(term) {
     return term instanceof NamedNode;
 } // isNamedNode
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isBlankNode(term) {
     return term instanceof BlankNode;
 } // isBlankNode
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isLiteral(term) {
     return term instanceof Literal;
 } // isLiteral
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isVariable(term) {
     return term instanceof Variable;
 } // isVariable
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isDefaultGraph(term) {
     return term instanceof DefaultGraph;
 } // isDefaultGraph
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isQuad(term) {
     return term instanceof Quad;
 } // isQuad
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isSubject(term) {
     return isNamedNode(term) || isBlankNode(term) || isVariable(term);
 } // isSubject
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isPredicate(term) {
     return isNamedNode(term) || isVariable(term);
 } // isPredicate
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isObject(term) {
     return isNamedNode(term) || isLiteral(term) || isBlankNode(term) || isVariable(term);
 } // isObject
 
-/**
- * @param {Term} term
- * @returns {boolean}
- */
 function isGraph(term) {
     return isNamedNode(term) || isDefaultGraph(term) || isVariable(term);
 } // isGraph
 
-//#endregion << METHODS
-
-exports = module.exports = {
+module.exports = {
     Term, NamedNode, BlankNode, Literal, Variable, DefaultGraph, Quad,
     isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
     isQuad, isSubject, isPredicate, isObject, isGraph

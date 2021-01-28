@@ -1,15 +1,7 @@
 const
     { isQuad, isSubject, isPredicate, isObject, isGraph } = require('./DataModel.js'),
-    dataFactory = require('./DataFactory.js');
-
-//#region >> PRIVATE
-
-const {
-    _assert, _isString, _isObject
-} = require('./util.js');
-
-//#endregion << PRIVATE
-//#region >> CLASSES
+    { quad: buildQuad } = require('./DataFactory.js'),
+    { _assert, _isString, _isObject } = require('./util.js');
 
 class TermIndex {
 
@@ -192,7 +184,7 @@ class Dataset {
             quadIndex = this.#quads,
             quadIterator = quadIndex.entries();
         for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
-            yield dataFactory.quad(
+            yield buildQuad(
                 termIndex.getTerm(subjKey),
                 termIndex.getTerm(predKey),
                 termIndex.getTerm(objKey),
@@ -292,7 +284,7 @@ class Dataset {
 
         const quadIterator = quadIndex.entries(graphKey, subjKey, predKey, objKey);
         for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
-            dataset.add(dataFactory.quad(
+            dataset.add(buildQuad(
                 termIndex.getTerm(subjKey),
                 termIndex.getTerm(predKey),
                 termIndex.getTerm(objKey),
