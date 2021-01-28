@@ -1,58 +1,41 @@
 //#region >> PRIVATE
 
-function _assert(value, errMsg = 'undefined error', errType = Error) {
-    if (!value) {
-        const err = new errType('module.persistence : DataModel : ' + errMsg);
-        Error.captureStackTrace(err, _assert);
-        throw err;
-    }
-} // _assert
-
-function _lockProp(obj, ...keys) {
-    const lock = { writable: false, configurable: false };
-    for (let key of keys) {
-        Object.defineProperty(obj, key, lock);
-    }
-} // _lockProp
-
-function _patternValidator(pattern) {
-    return value => pattern.test(value);
-} // _patternValidator
-
-function _isString(value) {
-    return typeof value === 'string';
-} // _isString
+const {
+    _assert, _lockProp, _strValidator, _isString
+} = require('./util.js');
 
 /**
  * @typedef {"NamedNode"|"BlankNode"|"Literal"|"Variable"|"DefaultGraph"|"Quad"} TermType
  * @pattern /^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/
  */
-// const _isTermType = _patternValidator(/^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/);
+// const _isTermType = _strValidator(/^(?:NamedNode|BlankNode|Literal|Variable|DefaultGraph|Quad)$/);
 const _isTermType = _isString;
+
+// TODO rework patterns, e.g. IRI pattern, to match specifications
 
 /**
  * @typedef {string} IriString
  * @pattern /^\w+:\S+$/
  */
-const _isIriString = _patternValidator(/^\w+:\S+$/);
+const _isIriString = _strValidator(/^\w+:\S+$/);
 
 /**
  * @typedef {string} IdString
  * @pattern /^\S+$/
  */
-const _isIdString = _patternValidator(/^\S+$/);
+const _isIdString = _strValidator(/^\S+$/);
 
 /**
  * @typedef {string} NameString
  * @pattern /^[a-z]\w*$/i
  */
-const _isNameString = _patternValidator(/^[a-z]\w*$/i);
+const _isNameString = _strValidator(/^[a-z]\w*$/i);
 
 /**
  * @typedef {string} LangString
  * @pattern /^[a-z]{2}(?:-[a-z]{2})?$/i
  */
-const _isLangString = _patternValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i);
+const _isLangString = _strValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i);
 
 //#endregion << PRIVATE
 //#region >> CLASSES

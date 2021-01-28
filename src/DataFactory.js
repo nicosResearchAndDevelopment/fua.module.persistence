@@ -6,21 +6,9 @@ const
 
 //#region >> PRIVATE
 
-function _assert(value, errMsg = 'undefined error', errType = Error) {
-    if (!value) {
-        const err = new errType('module.persistence : DataFactory : ' + errMsg);
-        Error.captureStackTrace(err, _assert);
-        throw err;
-    }
-} // _assert
-
-function _isString(value) {
-    return typeof value === 'string';
-} // _isString
-
-function _isObject(value) {
-    return value && typeof value === 'object';
-} // _isObject
+const {
+    _assert, _isString, _isObject
+} = require('./util.js');
 
 //#endregion << PRIVATE
 //#region >> METHODS

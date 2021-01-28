@@ -13,6 +13,7 @@ describe('module.persistence', function() {
                 termType: 'NamedNode',
                 value: 'http://example.org/test'
             });
+            expect(() => dataFactory.namedNode()).toThrow(Error);
         });
 
         it('should have a function "blankNode" returning a BlankNode', async function() {
@@ -21,6 +22,7 @@ describe('module.persistence', function() {
                 termType: 'BlankNode',
                 value: '1'
             });
+            expect(() => dataFactory.blankNode()).toThrow(Error);
         });
 
         it('should have a function "literal" returning a Literal', async function() {
@@ -29,6 +31,7 @@ describe('module.persistence', function() {
                 termType: 'Literal',
                 value: 'hello world'
             });
+            expect(() => dataFactory.literal()).toThrow(Error);
         });
 
         it('should have a function "variable" returning a Variable', async function() {
@@ -37,6 +40,7 @@ describe('module.persistence', function() {
                 termType: 'Variable',
                 value: 'test'
             });
+            expect(() => dataFactory.variable()).toThrow(Error);
         });
 
         it('should have a function "defaultGraph" returning a DefaultGraph', async function() {
@@ -71,6 +75,7 @@ describe('module.persistence', function() {
                     termType: 'DefaultGraph'
                 }
             });
+            expect(() => dataFactory.quad()).toThrow(Error);
         });
 
         it('should have a function "fromTerm" returning a copied Term', async function() {
