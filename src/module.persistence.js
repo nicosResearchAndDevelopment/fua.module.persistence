@@ -1,17 +1,13 @@
-const
-    {
-        isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
-        isQuad, isSubject, isPredicate, isObject, isGraph
-    } = require('./DataModel.js'),
-    {
-        namedNode, blankNode, literal, variable, defaultGraph, quad,
-        fromTerm, fromQuad
-    } = require('./DataFactory.js'),
-    {
-        dataset, isDataset
-    } = require('./DatasetFactory.js');
+const {
+    namedNode, blankNode, literal, variable, defaultGraph, quad,
+    fromTerm, fromQuad,
+    isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
+    isQuad, isSubject, isPredicate, isObject, isGraph
+} = require('./DataFactory.js'), {
+    dataset, isDataset
+} = require('./DatasetFactory.js');
 
-exports = module.exports = {
+module.exports = {
     fromTerm, isTerm,
     namedNode, isNamedNode,
     blankNode, isBlankNode,
@@ -21,4 +17,4 @@ exports = module.exports = {
     isSubject, isPredicate, isObject, isGraph,
     quad, fromQuad, isQuad,
     dataset, isDataset
-}; // exports
+};

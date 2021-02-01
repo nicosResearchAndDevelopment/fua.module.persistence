@@ -1,29 +1,30 @@
 const
+    _ = exports,
     MODULE_NAME = 'module.persistence';
 
-exports._assert = function(value, errMsg = 'undefined error', errType = Error) {
+_.assert = function(value, errMsg = 'undefined error', errType = Error) {
     if (!value) {
         const err = new errType(`${MODULE_NAME} : ${errMsg}`);
-        Error.captureStackTrace(err, exports._assert);
+        Error.captureStackTrace(err, _.assert);
         throw err;
     }
 };
 
-exports._lockProp = function(obj, ...keys) {
+_.lockProp = function(obj, ...keys) {
     const lock = { writable: false, configurable: false };
     for (let key of keys) {
         Object.defineProperty(obj, key, lock);
     }
 };
 
-exports._strValidator = function(pattern) {
+_.strValidator = function(pattern) {
     return value => pattern.test(value);
 };
 
-exports._isString = function(value) {
+_.isString = function(value) {
     return typeof value === 'string';
 };
 
-exports._isObject = function(value) {
+_.isObject = function(value) {
     return value && typeof value === 'object';
 };

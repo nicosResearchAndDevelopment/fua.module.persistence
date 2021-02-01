@@ -1,48 +1,34 @@
-const
-    { isQuad, isSubject, isPredicate, isObject, isGraph } = require('./DataModel.js'),
-    { quad: buildQuad } = require('./DataFactory.js'),
-    { _assert, _isString, _isObject } = require('./util.js');
+// TODO evaluate, whether Dataset and DatasetFactory should move from module.persistence.inmemory to here
+// IDEA add the quad as last param to the QuadIndex, so it can be retrieved with entries
+// IDEA delete a term by setting TermIndex#terms[key] to null, so you can recover it later and dont loose the proper key
 
-class TermIndex {
+const
+    _ = require('./util.js'),
+    dataFactory = require('./DataFactory.js'),
+    model = exports,
+    factory = require('./DatasetFactory.js');
+
+/**
+ * @class TermIndex
+ */
+model.TermIndex = class {
 
     constructor() {
+        /** @type {number} */
         this.size = 0;
+        /** @type {Object<string, number>} */
         this.keys = Object.create(null);
+        /** @type {Object<number, Term>} */
         this.terms = Object.create(null);
         this.terms[0] = null;
     } // QuadIndex#constructor
 
     /**
      * @param {Term} term
-     * @returns {string}
-     */
-    termToId(term) {
-        switch (term.termType) {
-            case 'NamedNode':
-                return term.value;
-            case 'BlankNode':
-                return '_:' + term.value;
-            case 'Literal':
-                return '"' + term.value + '"'
-                    + (term.language ? '@' + term.language : '^^' + term.datatype.value);
-            case 'Variable':
-                return '?' + term.value;
-            case 'DefaultGraph':
-                return '';
-            case 'Quad':
-                return this.termToId(term.subject) + ' '
-                    + this.termToId(term.predicate) + ' '
-                    + this.termToId(term.object) + ' '
-                    + this.termToId(term.graph) + ' .';
-        }
-    } // TermIndex#termToId
-
-    /**
-     * @param {Term} term
      * @returns {number}
      */
     termToKey(term) {
-        const id = this.termToId(term);
+        const id = factory.termToId(term);
         let key = this.keys[id];
         if (!key) {
             key = (this.keys[id] = ++this.size);
@@ -56,7 +42,7 @@ class TermIndex {
      * @returns {number|undefined}
      */
     getKey(term) {
-        const id = this.termToId(term);
+        const id = factory.termToId(term);
         return this.keys[id];
     } // TermIndex#getKey
 
@@ -68,12 +54,17 @@ class TermIndex {
         return this.terms[key];
     } // TermIndex#getTerm
 
-} // TermIndex
+}; // TermIndex
 
-class QuadIndex {
+/**
+ * @class QuadIndex
+ */
+model.QuadIndex = class {
 
     constructor() {
+        /** @type {number} */
         this.size = 0;
+        /** @type {Object<number, Object<number, Object<number, Object<number, boolean>>>>} */
         this.graph = Object.create(null);
     } // QuadIndex#constructor
 
@@ -167,16 +158,15 @@ class QuadIndex {
         }
     } // QuadIndex#entries
 
-} // QuadIndex
+}; // QuadIndex
 
-class Dataset {
+/**
+ * @class Dataset
+ */
+model.Dataset = class {
 
-    #terms = new TermIndex();
-    #quads = new QuadIndex();
-
-    // TODO evaluate, whether Dataset and DatasetFactory should move from module.persistence.inmemory to here
-    // IDEA add the quad as last param to the QuadIndex, so it can be retrieved with entries
-    // IDEA delete a term by setting TermIndex#terms[key] to null, so you can recover it later and dont loose the proper key
+    #terms = factory.termIndex();
+    #quads = factory.quadIndex();
 
     * [Symbol.iterator]() {
         const
@@ -184,26 +174,27 @@ class Dataset {
             quadIndex = this.#quads,
             quadIterator = quadIndex.entries();
         for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
-            yield buildQuad(
+            const quad = dataFactory.quad(
                 termIndex.getTerm(subjKey),
                 termIndex.getTerm(predKey),
                 termIndex.getTerm(objKey),
                 termIndex.getTerm(graphKey)
             );
+            yield quad;
         }
     }
 
     /** @type {number} */
     get size() {
         return this.#quads.size;
-    }
+    } // Dataset#size
 
     /**
      * @param {Quad} quad
      * @returns {boolean}
      */
     add(quad) {
-        _assert(isQuad(quad), 'Dataset#add : invalid quad', TypeError);
+        _.assert(dataFactory.isQuad(quad), 'Dataset#add : invalid quad', TypeError);
 
         const
             termIndex = this.#terms,
@@ -222,7 +213,7 @@ class Dataset {
      * @returns {boolean}
      */
     has(quad) {
-        _assert(isQuad(quad), 'Dataset#has : invalid quad', TypeError);
+        _.assert(dataFactory.isQuad(quad), 'Dataset#has : invalid quad', TypeError);
 
         const
             termIndex = this.#terms,
@@ -242,7 +233,7 @@ class Dataset {
      * @returns {boolean}
      */
     delete(quad) {
-        _assert(isQuad(quad), 'Dataset#delete : invalid quad', TypeError);
+        _.assert(dataFactory.isQuad(quad), 'Dataset#delete : invalid quad', TypeError);
 
         const
             termIndex = this.#terms,
@@ -265,10 +256,10 @@ class Dataset {
      * @returns {Dataset}
      */
     match(subject, predicate, object, graph) {
-        _assert(!subject || isSubject(subject), 'Dataset#match : invalid subject', TypeError);
-        _assert(!predicate || isPredicate(predicate), 'Dataset#match : invalid predicate', TypeError);
-        _assert(!object || isObject(object), 'Dataset#match : invalid object', TypeError);
-        _assert(!graph || isGraph(graph), 'Dataset#match : invalid graph', TypeError);
+        _.assert(!subject || dataFactory.isSubject(subject), 'Dataset#match : invalid subject', TypeError);
+        _.assert(!predicate || dataFactory.isPredicate(predicate), 'Dataset#match : invalid predicate', TypeError);
+        _.assert(!object || dataFactory.isObject(object), 'Dataset#match : invalid object', TypeError);
+        _.assert(!graph || dataFactory.isGraph(graph), 'Dataset#match : invalid graph', TypeError);
 
         const
             termIndex = this.#terms,
@@ -277,14 +268,14 @@ class Dataset {
             predKey = predicate ? termIndex.getKey(predicate) : undefined,
             objKey = object ? termIndex.getKey(object) : undefined,
             graphKey = graph ? termIndex.getKey(graph) : undefined,
-            dataset = new Dataset();
+            dataset = factory.dataset();
 
         if (!subject !== !subjKey || !predicate !== !predKey || !object !== !objKey || !graph !== !graphKey)
             return dataset;
 
         const quadIterator = quadIndex.entries(graphKey, subjKey, predKey, objKey);
         for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
-            dataset.add(buildQuad(
+            dataset.add(dataFactory.quad(
                 termIndex.getTerm(subjKey),
                 termIndex.getTerm(predKey),
                 termIndex.getTerm(objKey),
@@ -295,8 +286,4 @@ class Dataset {
         return dataset;
     } // Dataset#match
 
-} // Dataset
-
-module.exports = {
-    Dataset
-}; // exports 
+}; // Dataset

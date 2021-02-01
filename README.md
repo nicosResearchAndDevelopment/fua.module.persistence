@@ -6,6 +6,10 @@
 - [MongoDB](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.mongodb)
 - [Neo4j](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.neo4j)
 
+## Ideas & Todos
+
+- Make a global prefix-map singleton to reduce data size consistently
+
 ## Interfaces
 
 - [RDF/JS: Data model specification](http://rdf.js.org/data-model-spec/)
