@@ -297,6 +297,6 @@ class Dataset {
 
 } // Dataset
 
-//#endregion << CLASSES
-
-module.exports = Dataset;
+module.exports = {
+    Dataset
+}; // exports 

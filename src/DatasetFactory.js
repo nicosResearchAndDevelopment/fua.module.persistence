@@ -1,5 +1,5 @@
 const
-    Dataset = require('./Dataset.js'),
+    { Dataset } = require('./Dataset.js'),
     { _assert } = require('./util.js');
 
 function isDataset(that) {

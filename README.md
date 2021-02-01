@@ -191,7 +191,7 @@ interface DataStore extends EventEmitter {
  */
 interface DataFactory {
     namedNode(iri: string): NamedNode;
-    blankNode(id?: string): BlankNode;
+    blankNode(id?: string): BlankNode; // TODO id optional? then maybe with uuid generator
     literal(value: string,  langOrDt?: string | NamedNode): Literal;
     variable(name: string): Variable;
     defaultGraph(): DefaultGraph;
