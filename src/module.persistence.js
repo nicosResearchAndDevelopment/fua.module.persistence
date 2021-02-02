@@ -14,7 +14,7 @@ module.exports = {
     literal, isLiteral,
     variable, isVariable,
     defaultGraph, isDefaultGraph,
-    isSubject, isPredicate, isObject, isGraph,
     quad, fromQuad, isQuad,
+    isSubject, isPredicate, isObject, isGraph,
     dataset, isDataset
 };

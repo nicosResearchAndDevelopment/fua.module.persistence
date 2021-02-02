@@ -18,13 +18,39 @@ _.lockProp = function(obj, ...keys) {
 };
 
 _.strValidator = function(pattern) {
-    return value => pattern.test(value);
+    return (value) => _.isString(value) && pattern.test(value);
+};
+
+_.arrValidator = function(checker) {
+    return (value) => _.isArray(value) && value.every(checker);
+};
+
+_.isBoolean = function(value) {
+    return typeof value === 'boolean';
+};
+
+_.isNumber = function(value) {
+    return typeof value === 'number' && !isNaN(value);
 };
 
 _.isString = function(value) {
     return typeof value === 'string';
 };
 
+_.isFunction = function(value) {
+    return typeof value === 'function';
+};
+
 _.isObject = function(value) {
     return value && typeof value === 'object';
+};
+
+_.isArray = Array.isArray;
+
+_.isIterable = function(value) {
+    try {
+        return _.isFunction(value[Symbol.iterator]);
+    } catch (err) {
+        return false;
+    }
 };

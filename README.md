@@ -130,6 +130,7 @@ interface Dataset extends Iterable<Quad> {
     intersection(other: Dataset): Dataset;
     difference(other: Dataset): Dataset;
     
+    [Symbol.iterator](): Iterator<Quad>;
     quads(): Iterator<Quad>;
     toArray(): Array<Quad>;
     toStream(): Readable<Quad>;
