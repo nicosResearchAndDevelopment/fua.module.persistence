@@ -1,7 +1,7 @@
-const
-    { fromQuad } = require('../src/DataFactory.js'),
-    Dataset = require('../src/Dataset.js'),
-    myData = new Dataset();
+const {
+        fromQuad, dataset, generateGraph
+    } = require('../src/module.persistence.js'),
+    myData = dataset();
 
 myData.add(fromQuad({
     subject: {
@@ -9,8 +9,8 @@ myData.add(fromQuad({
         value: 'ex:test'
     },
     predicate: {
-        termType: 'Variable',
-        value: 'test'
+        termType: 'NamedNode',
+        value: 'rdfs:comment'
     },
     object: {
         termType: 'Literal',
@@ -34,5 +34,5 @@ myData.add(fromQuad({
     }
 }));
 
-console.log(Array.from(myData));
+console.log(generateGraph(myData));
 debugger;

@@ -4,7 +4,9 @@ const {
     isTerm, isNamedNode, isBlankNode, isLiteral, isVariable, isDefaultGraph,
     isQuad, isSubject, isPredicate, isObject, isGraph
 } = require('./DataFactory.js'), {
-    dataset, isDataset
+    dataset, isDataset,
+    termFromId, termToId,
+    generateGraph, shaclValidate
 } = require('./DatasetFactory.js');
 
 module.exports = {
@@ -16,5 +18,7 @@ module.exports = {
     defaultGraph, isDefaultGraph,
     quad, fromQuad, isQuad,
     isSubject, isPredicate, isObject, isGraph,
-    dataset, isDataset
+    dataset, isDataset,
+    termFromId, termToId,
+    generateGraph, shaclValidate
 };
