@@ -110,8 +110,8 @@ class Quad extends Term {
 
 class TermFactory {
 
-    #context = new Map();
     #default = Object.create(null);
+    #context = new Map();
 
     constructor(context = {}) {
         _.assert(_.isObject(context), 'TermFactory#constructor : invalid context', TypeError);
@@ -130,6 +130,11 @@ class TermFactory {
         this.#default.defaultGraph = new DefaultGraph();
         this.#default.xsd_string = this.namedNode('http://www.w3.org/2001/XMLSchema#string');
         this.#default.rdf_langString = this.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
+        Object.freeze(this.#default);
+    } // TermFactory#context
+
+    context() {
+        return Object.fromEntries(this.#context);
     } // TermFactory#context
 
     isTerm(term) {
@@ -229,6 +234,14 @@ class TermFactory {
     isQuad(term) {
         return term instanceof Quad;
     } // TermFactory#isQuad
+
+    validQuad(term) {
+        return this.isQuad(term)
+            && this.isSubject(term.subject)
+            && this.isPredicate(term.predicate)
+            && this.isObject(term.object)
+            && this.isGraph(term.graph);
+    } // TermFactory#validQuad
 
     fromTerm(original) {
         _.assert(_.isObject(original), 'TermFactory#fromTerm : invalid original', TypeError);
