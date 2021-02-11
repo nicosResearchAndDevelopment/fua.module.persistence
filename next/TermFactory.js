@@ -243,6 +243,22 @@ class TermFactory {
             && this.isGraph(term.graph);
     } // TermFactory#validQuad
 
+    tripel(subject, predicate, object) {
+        return this.quad(subject, predicate, object, this.defaultGraph());
+    } // TermFactory#tripel
+
+    isTripel(term) {
+        return this.isQuad(term)
+            && this.isDefaultGraph(term.graph);
+    } // TermFactory#isTripel
+
+    validTripel(term) {
+        return this.isTripel(term)
+            && this.isSubject(term.subject)
+            && this.isPredicate(term.predicate)
+            && this.isObject(term.object);
+    } // TermFactory#validTripel
+
     fromTerm(original) {
         _.assert(_.isObject(original), 'TermFactory#fromTerm : invalid original', TypeError);
         if (this.isTerm(original)) return original;
@@ -276,6 +292,39 @@ class TermFactory {
             original.graph ? this.fromTerm(original.graph) : undefined
         );
     } // TermFactory#fromQuad
+
+    fromString(termStr) {
+        _.assert(_.isString(termStr), 'TermFactory#fromString : invalid termStr', TypeError);
+        const termRes = termStr.match(/^(\w+)<(.*)>$/s);
+        _.assert(termRes, 'TermFactory#fromString : invalid syntax');
+        const termType = termRes[1], termVal = termRes[2];
+        switch (termType) {
+            case 'NamedNode':
+                return this.namedNode(termVal);
+            case 'BlankNode':
+                return this.blankNode(termVal);
+            case 'Literal':
+                const litRes = termVal.match(/^(.*),([a-z-]*),NamedNode<(\S+)>$/si);
+                _.assert(litRes, 'TermFactory#fromString : invalid syntax');
+                const litVal = litRes[1], langOrDt = litRes[2] || this.namedNode(litRes[3]);
+                return this.literal(litVal, langOrDt);
+            case 'Variable':
+                return this.variable(termVal);
+            case 'DefaultGraph':
+                return this.defaultGraph();
+            case 'Quad':
+                const quadRes = termVal.match(/^(\w+<.*>),(\w+<.*>),(\w+<.*>),(\w+<.*>)$/s);
+                _.assert(quadRes, 'TermFactory#fromString : invalid syntax');
+                return this.quad(
+                    this.fromString(quadRes[1]),
+                    this.fromString(quadRes[2]),
+                    this.fromString(quadRes[3]),
+                    this.fromString(quadRes[4])
+                );
+            default:
+                _.assert(false, 'TermFactory#fromString : unknown termType ' + termType);
+        }
+    } // TermFactory#fromString
 
 } // TermFactory
 
