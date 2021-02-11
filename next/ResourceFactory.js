@@ -1,7 +1,6 @@
 const
     _ = require('./util.js'),
-    TermFactory = require('./TermFactory.js'),
-    _isDataset = (value) => false;
+    DatasetFactory = require('./DatasetFactory.js');
 
 class Resource {
 
@@ -26,7 +25,7 @@ class Model {
 
 } // Model
 
-class ResourceFactory extends TermFactory {
+class ResourceFactory extends DatasetFactory {
 
     #default = Object.create(null);
     #types = new Map();
@@ -52,7 +51,7 @@ class ResourceFactory extends TermFactory {
 
     resource(subject, dataset) {
         _.assert(this.isNamedNode(subject), 'ResourceFactory#resource : invalid subject', TypeError);
-        _.assert(_isDataset(dataset), 'ResourceFactory#resource : invalid dataset', TypeError);
+        _.assert(this.isDataset(dataset), 'ResourceFactory#resource : invalid dataset', TypeError);
 
         const
             resource = new Resource(subject.value),

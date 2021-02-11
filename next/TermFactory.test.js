@@ -6,7 +6,7 @@ const
 
 describe('TermFactory', function() {
 
-    test('fromString', function() {
+    test('TermFactory#stringToTerm', function() {
         const
             ex = factory.namedNode('http://example.org/'),
             ex_hello = factory.namedNode('ex:hello'),
@@ -20,11 +20,11 @@ describe('TermFactory', function() {
             q2 = factory.tripel(ex_hello, rdfs_label, ex_test_label),
             q3 = factory.quad(ex_hello, ex_valid, ex_valid_true, ex);
 
-        expect(ex_hello.equals(factory.fromString(ex_hello.toString()))).toBeTruthy();
-        expect(q1.equals(factory.fromString(q1.toString()))).toBeTruthy();
-        expect(ex_test_label.equals(factory.fromString(ex_test_label.toString()))).toBeTruthy();
-        expect(q2.equals(factory.fromString(q2.toString()))).toBeTruthy();
-        expect(q3.equals(factory.fromString(q3.toString()))).toBeTruthy();
+        expect(ex_hello.equals(factory.stringToTerm(ex_hello.toString()))).toBeTruthy();
+        expect(q1.equals(factory.stringToTerm(q1.toString()))).toBeTruthy();
+        expect(ex_test_label.equals(factory.stringToTerm(ex_test_label.toString()))).toBeTruthy();
+        expect(q2.equals(factory.stringToTerm(q2.toString()))).toBeTruthy();
+        expect(q3.equals(factory.stringToTerm(q3.toString()))).toBeTruthy();
     });
 
 });

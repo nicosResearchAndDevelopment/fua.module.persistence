@@ -23,7 +23,8 @@ class Term {
     } // Term#equals
 
     toString() {
-        return `${this.termType}<${this.value}>`;
+        return this.termType + '<'
+            + this.value + '>';
     } // Term#toString
 
 } // Term
@@ -60,7 +61,10 @@ class Literal extends Term {
     } // Literal#equals
 
     toString() {
-        return `${this.termType}<${this.value},${this.language},${this.datatype}>`;
+        return this.termType + '<'
+            + this.value + ','
+            + this.language + ','
+            + this.datatype + '>';
     } // Literal#toString
 
 } // Literal
@@ -101,7 +105,11 @@ class Quad extends Term {
     } // Quad#equals
 
     toString() {
-        return `${this.termType}<${this.subject},${this.predicate},${this.object},${this.graph}>`;
+        return this.termType + '<'
+            + this.subject + ','
+            + this.predicate + ','
+            + this.object + ','
+            + this.graph + '>';
     } // Quad#toString
 
 } // Quad
@@ -146,7 +154,7 @@ class TermFactory {
         for (let [_prefix, _iri] of this.#context) {
             if (iri.startsWith(_iri)) {
                 if (iri.length > _iri.length)
-                    iri = `${_prefix}:${iri.substr(_iri.length)}`;
+                    iri = _prefix + ':' + iri.substr(_iri.length);
                 break;
             }
         }
@@ -252,13 +260,6 @@ class TermFactory {
             && this.isDefaultGraph(term.graph);
     } // TermFactory#isTripel
 
-    validTripel(term) {
-        return this.isTripel(term)
-            && this.isSubject(term.subject)
-            && this.isPredicate(term.predicate)
-            && this.isObject(term.object);
-    } // TermFactory#validTripel
-
     fromTerm(original) {
         _.assert(_.isObject(original), 'TermFactory#fromTerm : invalid original', TypeError);
         if (this.isTerm(original)) return original;
@@ -277,8 +278,9 @@ class TermFactory {
                 return this.defaultGraph();
             case 'Quad':
                 return this.fromQuad(original);
+            default:
+                _.assert(false, 'TermFactory#fromTerm : unknown termType ' + original.termType);
         }
-        _.assert(false, 'TermFactory#fromTerm : unknown termType ' + original.termType);
     } // TermFactory#fromTerm
 
     fromQuad(original) {
@@ -293,10 +295,10 @@ class TermFactory {
         );
     } // TermFactory#fromQuad
 
-    fromString(termStr) {
-        _.assert(_.isString(termStr), 'TermFactory#fromString : invalid termStr', TypeError);
+    stringToTerm(termStr) {
+        _.assert(_.isString(termStr), 'TermFactory#stringToTerm : invalid termStr', TypeError);
         const termRes = termStr.match(/^(\w+)<(.*)>$/s);
-        _.assert(termRes, 'TermFactory#fromString : invalid syntax');
+        _.assert(termRes, 'TermFactory#stringToTerm : invalid syntax');
         const termType = termRes[1], termVal = termRes[2];
         switch (termType) {
             case 'NamedNode':
@@ -305,7 +307,7 @@ class TermFactory {
                 return this.blankNode(termVal);
             case 'Literal':
                 const litRes = termVal.match(/^(.*),([a-z-]*),NamedNode<(\S+)>$/si);
-                _.assert(litRes, 'TermFactory#fromString : invalid syntax');
+                _.assert(litRes, 'TermFactory#stringToTerm : invalid literal syntax');
                 const litVal = litRes[1], langOrDt = litRes[2] || this.namedNode(litRes[3]);
                 return this.literal(litVal, langOrDt);
             case 'Variable':
@@ -314,17 +316,17 @@ class TermFactory {
                 return this.defaultGraph();
             case 'Quad':
                 const quadRes = termVal.match(/^(\w+<.*>),(\w+<.*>),(\w+<.*>),(\w+<.*>)$/s);
-                _.assert(quadRes, 'TermFactory#fromString : invalid syntax');
+                _.assert(quadRes, 'TermFactory#stringToTerm : invalid quad syntax');
                 return this.quad(
-                    this.fromString(quadRes[1]),
-                    this.fromString(quadRes[2]),
-                    this.fromString(quadRes[3]),
-                    this.fromString(quadRes[4])
+                    this.stringToTerm(quadRes[1]),
+                    this.stringToTerm(quadRes[2]),
+                    this.stringToTerm(quadRes[3]),
+                    this.stringToTerm(quadRes[4])
                 );
             default:
-                _.assert(false, 'TermFactory#fromString : unknown termType ' + termType);
+                _.assert(false, 'TermFactory#stringToTerm : unknown termType ' + termType);
         }
-    } // TermFactory#fromString
+    } // TermFactory#stringToTerm
 
 } // TermFactory
 
