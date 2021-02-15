@@ -23,3 +23,24 @@
     - Woher weiß man, ob eine Ressource noch aktuell ist?
     - Braucht die Ressource oder das Model eine Reference auf den Space?
     - Wie geschieht die Anbindung der Resource zur Persistenz?
+  
+## Interface
+
+```ts
+interface Model {
+    '@id': string;
+    
+    build(resource, subject): Promise<void>;
+};
+
+interface Resource extends EventEmitter {
+    '@id': string;
+    '@type': Array<Model>;
+    
+    data: Dataset;
+    
+    // events
+    on(event: "added", callback: (predicate: Term, object: Term) => void): this;
+    on(event: "deleted", callback: (predicate: Term, object: Term) => void): this;
+};
+```
