@@ -1,7 +1,7 @@
 const
-    _ = require('./util.js'),
-    TermFactory = require('./TermFactory.js'),
-    { Readable } = require('stream'),
+    _              = require('./util.js'),
+    {Readable}     = require('stream'),
+    TermFactory    = require('./TermFactory.js'),
     defaultFactory = new TermFactory();
 
 // IDEA add the quad as last param to the QuadIndex, so it can be retrieved with entries
@@ -10,17 +10,17 @@ const
 class TermIndex {
 
     constructor() {
-        this.size = 0;
-        this.keys = Object.create(null);
-        this.terms = Object.create(null);
+        this.size     = 0;
+        this.keys     = Object.create(null);
+        this.terms    = Object.create(null);
         this.terms[0] = null;
     } // QuadIndex#constructor
 
     termToKey(term) {
         const id = term.toString();
-        let key = this.keys[id];
+        let key  = this.keys[id];
         if (!key) {
-            key = (this.keys[id] = ++this.size);
+            key             = (this.keys[id] = ++this.size);
             this.terms[key] = term;
         }
         return key;
@@ -40,8 +40,8 @@ class TermIndex {
 class QuadIndex {
 
     constructor() {
-        this.size = 0;
-        this.graph = Object.create(null);
+        this.size      = 0;
+        this.graph     = Object.create(null);
         this.graph[''] = {}; // DefaultGraph
     } // QuadIndex#constructor
 
@@ -89,16 +89,16 @@ class QuadIndex {
 
     * entries(key0, key1, key2, key3) {
         const index0 = this.graph;
-        const arr0 = key0 ? key0 in index0 ? [key0] : [] : Object.keys(index0);
+        const arr0   = key0 ? key0 in index0 ? [key0] : [] : Object.keys(index0);
         for (const key0 of arr0) {
             const index1 = index0[key0];
-            const arr1 = key1 ? key1 in index1 ? [key1] : [] : Object.keys(index1);
+            const arr1   = key1 ? key1 in index1 ? [key1] : [] : Object.keys(index1);
             for (const key1 of arr1) {
                 const index2 = index1[key1];
-                const arr2 = key2 ? key2 in index2 ? [key2] : [] : Object.keys(index2);
+                const arr2   = key2 ? key2 in index2 ? [key2] : [] : Object.keys(index2);
                 for (const key2 of arr2) {
                     const index3 = index2[key2];
-                    const arr3 = key3 ? key3 in index3 ? [key3] : [] : Object.keys(index3);
+                    const arr3   = key3 ? key3 in index3 ? [key3] : [] : Object.keys(index3);
                     for (const key3 of arr3) {
                         yield [key0, key1, key2, key3];
                     }
@@ -156,7 +156,7 @@ class Dataset {
         for (let quad of this) {
             if (pipeAcc) {
                 pipeAcc = false;
-                acc = quad;
+                acc     = quad;
             } else {
                 iteratee(acc, quad, this);
             }
@@ -173,11 +173,11 @@ class Dataset {
         const
             termIndex = this.#terms,
             quadIndex = this.#quads,
-            subjKey = subject ? termIndex.getKey(subject) : undefined,
-            predKey = predicate ? termIndex.getKey(predicate) : undefined,
-            objKey = object ? termIndex.getKey(object) : undefined,
-            graphKey = graph ? termIndex.getKey(graph) : undefined,
-            result = new Dataset();
+            subjKey   = subject ? termIndex.getKey(subject) : undefined,
+            predKey   = predicate ? termIndex.getKey(predicate) : undefined,
+            objKey    = object ? termIndex.getKey(object) : undefined,
+            graphKey  = graph ? termIndex.getKey(graph) : undefined,
+            result    = new Dataset();
 
         if (!subject !== !subjKey || !predicate !== !predKey || !object !== !objKey || !graph !== !graphKey)
             return result;
@@ -233,8 +233,8 @@ class Dataset {
 
     * [Symbol.iterator]() {
         const
-            termIndex = this.#terms,
-            quadIndex = this.#quads,
+            termIndex    = this.#terms,
+            quadIndex    = this.#quads,
             quadIterator = quadIndex.entries();
         for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
             const quad = this.factory.quad(
@@ -271,9 +271,9 @@ class Dataset {
         let addCount = 0;
         for (let quad of quadArr) {
             const
-                subjKey = termIndex.termToKey(quad.subject),
-                predKey = termIndex.termToKey(quad.predicate),
-                objKey = termIndex.termToKey(quad.object),
+                subjKey  = termIndex.termToKey(quad.subject),
+                predKey  = termIndex.termToKey(quad.predicate),
+                objKey   = termIndex.termToKey(quad.object),
                 graphKey = termIndex.termToKey(quad.graph);
 
             if (quadIndex.add(graphKey, subjKey, predKey, objKey))
@@ -304,9 +304,9 @@ class Dataset {
         let delCount = 0;
         for (let quad of quadArr) {
             const
-                subjKey = termIndex.termToKey(quad.subject),
-                predKey = termIndex.termToKey(quad.predicate),
-                objKey = termIndex.termToKey(quad.object),
+                subjKey  = termIndex.termToKey(quad.subject),
+                predKey  = termIndex.termToKey(quad.predicate),
+                objKey   = termIndex.termToKey(quad.object),
                 graphKey = termIndex.termToKey(quad.graph);
 
             if (subjKey && predKey && objKey && graphKey
@@ -335,16 +335,16 @@ class Dataset {
         const
             termIndex = this.#terms,
             quadIndex = this.#quads,
-            subjKey = subject ? termIndex.getKey(subject) : undefined,
-            predKey = predicate ? termIndex.getKey(predicate) : undefined,
-            objKey = object ? termIndex.getKey(object) : undefined,
-            graphKey = graph ? termIndex.getKey(graph) : undefined;
+            subjKey   = subject ? termIndex.getKey(subject) : undefined,
+            predKey   = predicate ? termIndex.getKey(predicate) : undefined,
+            objKey    = object ? termIndex.getKey(object) : undefined,
+            graphKey  = graph ? termIndex.getKey(graph) : undefined;
 
         if (!subject !== !subjKey || !predicate !== !predKey || !object !== !objKey || !graph !== !graphKey)
             return 0;
 
         const quadIterator = quadIndex.entries(graphKey, subjKey, predKey, objKey);
-        let delCount = 0;
+        let delCount       = 0;
         for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
             if (quadIndex.delete(graphKey, subjKey, predKey, objKey))
                 delCount++;
@@ -364,9 +364,9 @@ class Dataset {
 
         for (let quad of quadArr) {
             const
-                subjKey = termIndex.termToKey(quad.subject),
-                predKey = termIndex.termToKey(quad.predicate),
-                objKey = termIndex.termToKey(quad.object),
+                subjKey  = termIndex.termToKey(quad.subject),
+                predKey  = termIndex.termToKey(quad.predicate),
+                objKey   = termIndex.termToKey(quad.object),
                 graphKey = termIndex.termToKey(quad.graph);
 
             if (!(subjKey && predKey && objKey && graphKey

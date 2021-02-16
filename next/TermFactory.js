@@ -1,10 +1,10 @@
 const
-    _ = require('./util.js'),
-    _isPrefix = _.strValidator(/^[a-z][a-z0-9+\-.]*$/i),
-    _isIRI = _.strValidator(/^[a-z][a-z0-9+\-.]*:\S+$/i),
+    _             = require('./util.js'),
+    _isPrefix     = _.strValidator(/^[a-z][a-z0-9+\-.]*$/i),
+    _isIRI        = _.strValidator(/^[a-z][a-z0-9+\-.]*:\S+$/i),
     _isIdentifier = _.strValidator(/^\S+$/),
-    _isVariable = _.strValidator(/^[a-z]\w*$/i),
-    _isLanguage = _.strValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i);
+    _isVariable   = _.strValidator(/^[a-z]\w*$/i),
+    _isLanguage   = _.strValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i);
 
 //#region >> DataModel
 
@@ -12,7 +12,7 @@ class Term {
 
     constructor(termType, value) {
         this.termType = termType;
-        this.value = value;
+        this.value    = value;
         _.lockProp(this, 'value', 'termType');
     } // Term#constructor
 
@@ -89,10 +89,10 @@ class Quad extends Term {
 
     constructor(subject, predicate, object, graph) {
         super('Quad', '');
-        this.subject = subject;
+        this.subject   = subject;
         this.predicate = predicate;
-        this.object = object;
-        this.graph = graph;
+        this.object    = object;
+        this.graph     = graph;
         _.lockProp(this, 'subject', 'predicate', 'object', 'graph');
     } // Quad#constructor
 
@@ -135,8 +135,8 @@ class TermFactory {
             this.#context.set(prefix, iri);
         }
 
-        this.#default.defaultGraph = new DefaultGraph();
-        this.#default.xsd_string = this.namedNode('http://www.w3.org/2001/XMLSchema#string');
+        this.#default.defaultGraph   = new DefaultGraph();
+        this.#default.xsd_string     = this.namedNode('http://www.w3.org/2001/XMLSchema#string');
         this.#default.rdf_langString = this.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
         Object.freeze(this.#default);
     } // TermFactory#context
@@ -191,7 +191,7 @@ class TermFactory {
     } // TermFactory#isLiteral
 
     variable(name) {
-        _.assert(_isVariable(name), 'Variable#constructor : invalid name', TypeError);
+        _.assert(_isVariable(name), 'TermFactory#variable : invalid name', TypeError);
         return new Variable(name);
     } // TermFactory#variable
 
@@ -207,50 +207,6 @@ class TermFactory {
         return term instanceof DefaultGraph;
     } // TermFactory#isDefaultGraph
 
-    isSubject(term) {
-        return this.isNamedNode(term)
-            || this.isBlankNode(term)
-            || this.isVariable(term);
-    } // TermFactory#isSubject
-
-    isPredicate(term) {
-        return this.isNamedNode(term)
-            || this.isVariable(term);
-    } // TermFactory#isPredicate
-
-    isObject(term) {
-        return this.isNamedNode(term)
-            || this.isLiteral(term)
-            || this.isBlankNode(term)
-            || this.isVariable(term);
-    } // TermFactory#isObject
-
-    isGraph(term) {
-        return this.isNamedNode(term)
-            || this.isDefaultGraph(term)
-            || this.isVariable(term);
-    } // TermFactory#isGraph
-
-    quad(subject, predicate, object, graph) {
-        _.assert(this.isSubject(subject), 'TermFactory#quad : invalid subject', TypeError);
-        _.assert(this.isPredicate(predicate), 'TermFactory#quad : invalid predicate', TypeError);
-        _.assert(this.isObject(object), 'TermFactory#quad : invalid object', TypeError);
-        _.assert(!graph || this.isGraph(graph), 'TermFactory#quad : invalid graph', TypeError);
-        return new Quad(subject, predicate, object, graph || this.defaultGraph());
-    } // TermFactory#quad
-
-    isQuad(term) {
-        return term instanceof Quad;
-    } // TermFactory#isQuad
-
-    validQuad(term) {
-        return this.isQuad(term)
-            && this.isSubject(term.subject)
-            && this.isPredicate(term.predicate)
-            && this.isObject(term.object)
-            && this.isGraph(term.graph);
-    } // TermFactory#validQuad
-
     tripel(subject, predicate, object) {
         return this.quad(subject, predicate, object, this.defaultGraph());
     } // TermFactory#tripel
@@ -259,6 +215,50 @@ class TermFactory {
         return this.isQuad(term)
             && this.isDefaultGraph(term.graph);
     } // TermFactory#isTripel
+
+    quad(subject, predicate, object, graph) {
+        _.assert(this.validSubject(subject), 'TermFactory#quad : invalid subject', TypeError);
+        _.assert(this.validPredicate(predicate), 'TermFactory#quad : invalid predicate', TypeError);
+        _.assert(this.validObject(object), 'TermFactory#quad : invalid object', TypeError);
+        _.assert(!graph || this.validGraph(graph), 'TermFactory#quad : invalid graph', TypeError);
+        return new Quad(subject, predicate, object, graph || this.defaultGraph());
+    } // TermFactory#quad
+
+    isQuad(term) {
+        return term instanceof Quad;
+    } // TermFactory#isQuad
+
+    validSubject(term) {
+        return this.isNamedNode(term)
+            || this.isBlankNode(term)
+            || this.isVariable(term);
+    } // TermFactory#validSubject
+
+    validPredicate(term) {
+        return this.isNamedNode(term)
+            || this.isVariable(term);
+    } // TermFactory#validPredicate
+
+    validObject(term) {
+        return this.isNamedNode(term)
+            || this.isLiteral(term)
+            || this.isBlankNode(term)
+            || this.isVariable(term);
+    } // TermFactory#validObject
+
+    validGraph(term) {
+        return this.isNamedNode(term)
+            || this.isDefaultGraph(term)
+            || this.isVariable(term);
+    } // TermFactory#validGraph
+
+    validQuad(term) {
+        return this.isQuad(term)
+            && this.validSubject(term.subject)
+            && this.validPredicate(term.predicate)
+            && this.validObject(term.object)
+            && this.validGraph(term.graph);
+    } // TermFactory#validQuad
 
     fromTerm(original) {
         _.assert(_.isObject(original), 'TermFactory#fromTerm : invalid original', TypeError);

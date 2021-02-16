@@ -1,28 +1,33 @@
 const
-    _ = require('./util.js'),
+    _           = require('./util.js'),
     TermFactory = require('./TermFactory.js');
 
 class DataFactory extends TermFactory {
 
-    isSubject(term) {
+    variable() {
+        _.assert(false, 'DataFactory#variable : not supported');
+        return null;
+    } // DataFactory#variable
+
+    validSubject(term) {
         return this.isNamedNode(term)
             || this.isBlankNode(term);
-    } // TermFactory#isSubject
+    } // DataFactory#validSubject
 
-    isPredicate(term) {
+    validPredicate(term) {
         return this.isNamedNode(term);
-    } // TermFactory#isPredicate
+    } // DataFactory#validPredicate
 
-    isObject(term) {
+    validObject(term) {
         return this.isNamedNode(term)
             || this.isLiteral(term)
             || this.isBlankNode(term);
-    } // TermFactory#isObject
+    } // DataFactory#validObject
 
-    isGraph(term) {
+    validGraph(term) {
         return this.isNamedNode(term)
             || this.isDefaultGraph(term);
-    } // TermFactory#isGraph
+    } // DataFactory#validGraph
 
 } // DataFactory
 
