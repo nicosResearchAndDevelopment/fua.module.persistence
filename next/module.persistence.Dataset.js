@@ -136,7 +136,7 @@ class Dataset {
 
     filter(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#filter : invalid iteratee', TypeError);
-        const result = new Dataset();
+        const result = new Dataset(null, this.factory);
         for (let quad of this) {
             if (iteratee(quad, this))
                 result.add(quad);
@@ -146,7 +146,7 @@ class Dataset {
 
     map(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#map : invalid iteratee', TypeError);
-        const result = new Dataset();
+        const result = new Dataset(null, this.factory);
         for (let quad of this) {
             result.add(iteratee(quad, this));
         }
@@ -180,7 +180,7 @@ class Dataset {
             predKey   = predicate ? termIndex.getKey(predicate) : undefined,
             objKey    = object ? termIndex.getKey(object) : undefined,
             graphKey  = graph ? termIndex.getKey(graph) : undefined,
-            result    = new Dataset();
+            result    = new Dataset(null, this.factory);
 
         if (!subject !== !subjKey || !predicate !== !predKey || !object !== !objKey || !graph !== !graphKey)
             return result;
@@ -200,7 +200,7 @@ class Dataset {
 
     union(other) {
         _.assert(other instanceof Dataset, 'Dataset#union : invalid other', TypeError);
-        const result = new Dataset();
+        const result = new Dataset(null, this.factory);
         for (let quad of this) {
             result.add(quad);
         }
@@ -212,7 +212,7 @@ class Dataset {
 
     intersection(other) {
         _.assert(other instanceof Dataset, 'Dataset#intersection : invalid other', TypeError);
-        const result = new Dataset();
+        const result = new Dataset(null, this.factory);
         for (let quad of this) {
             if (other.has(quad))
                 result.add(quad);
@@ -222,7 +222,7 @@ class Dataset {
 
     difference(other) {
         _.assert(other instanceof Dataset, 'Dataset#difference : invalid other', TypeError);
-        const result = new Dataset();
+        const result = new Dataset(null, this.factory);
         for (let quad of this) {
             if (!other.has(quad))
                 result.add(quad);
