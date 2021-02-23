@@ -59,7 +59,7 @@ interface Quad extends Term {
 };
 
 interface Context {
-    [Symbol.hasInstance]: string;
+    [prefix: string]: string;
 };
 
 interface TermFactory {
@@ -76,7 +76,7 @@ interface TermFactory {
 
     fromTerm(original: Term): Term;
     fromQuad(original: Quad): Quad;
-    stringToTerm(termStr: string): Term;
+    fromString(termStr: string): Term;
 
     isTerm(that: Term | any): boolean;
     isNamedNode(that: NamedNode | any): boolean;

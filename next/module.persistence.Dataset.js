@@ -1,11 +1,12 @@
 const
-    _              = require('./util.js'),
+    _              = require('./module.persistence.util.js'),
     {Readable}     = require('stream'),
-    TermFactory    = require('./TermFactory.js'),
+    TermFactory    = require('./module.persistence.TermFactory.js'),
     defaultFactory = new TermFactory();
 
 // IDEA add the quad as last param to the QuadIndex, so it can be retrieved with entries
 // IDEA delete a term by setting TermIndex#terms[key] to null, so you can recover it later and dont loose the proper key
+// REM Dataset, TermIndex and QuadIndex could be optimized, though working currently
 
 class TermIndex {
 
@@ -114,9 +115,10 @@ class Dataset {
     #terms = new TermIndex();
     #quads = new QuadIndex();
 
-    constructor(factory = defaultFactory) {
-        _.assert(factory instanceof TermFactory, 'Dataset#constructor : invalid factory', TypeError);
-        this.factory = factory;
+    constructor(options = {}) {
+        _.assert(_.isObject(options), 'Dataset#constructor : invalid options', TypeError);
+        _.assert(!options.factory || options.factory instanceof TermFactory, 'Dataset#constructor : invalid options.factory', TypeError);
+        this.factory = options.factory || defaultFactory;
         _.lockProp(this, 'factory');
     } // Dataset#constructor
 
@@ -165,10 +167,10 @@ class Dataset {
     } // Dataset#reduce
 
     match(subject, predicate, object, graph) {
-        _.assert(!subject || this.factory.isSubject(subject), 'Dataset#match : invalid subject', TypeError);
-        _.assert(!predicate || this.factory.isPredicate(predicate), 'Dataset#match : invalid predicate', TypeError);
-        _.assert(!object || this.factory.isObject(object), 'Dataset#match : invalid object', TypeError);
-        _.assert(!graph || this.factory.isGraph(graph), 'Dataset#match : invalid graph', TypeError);
+        _.assert(!subject || this.factory.validSubject(subject), 'Dataset#match : invalid subject', TypeError);
+        _.assert(!predicate || this.factory.validPredicate(predicate), 'Dataset#match : invalid predicate', TypeError);
+        _.assert(!object || this.factory.validObject(object), 'Dataset#match : invalid object', TypeError);
+        _.assert(!graph || this.factory.validGraph(graph), 'Dataset#match : invalid graph', TypeError);
 
         const
             termIndex = this.#terms,
@@ -262,7 +264,7 @@ class Dataset {
     add(quads) {
         /** @type {Array<Quad>} */
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
-        _.assert(quadArr.every(this.factory.isQuad), 'Dataset#add : invalid quads', TypeError);
+        _.assert(quadArr.every(this.factory.validQuad), 'Dataset#add : invalid quads', TypeError);
 
         const
             termIndex = this.#terms,
@@ -327,10 +329,10 @@ class Dataset {
     } // Dataset#deleteStream
 
     deleteMatches(subject, predicate, object, graph) {
-        _.assert(!subject || this.factory.isSubject(subject), 'Dataset#deleteMatches : invalid subject', TypeError);
-        _.assert(!predicate || this.factory.isPredicate(predicate), 'Dataset#deleteMatches : invalid predicate', TypeError);
-        _.assert(!object || this.factory.isObject(object), 'Dataset#deleteMatches : invalid object', TypeError);
-        _.assert(!graph || this.factory.isGraph(graph), 'Dataset#deleteMatches : invalid graph', TypeError);
+        _.assert(!subject || this.factory.validSubject(subject), 'Dataset#deleteMatches : invalid subject', TypeError);
+        _.assert(!predicate || this.factory.validPredicate(predicate), 'Dataset#deleteMatches : invalid predicate', TypeError);
+        _.assert(!object || this.factory.validObject(object), 'Dataset#deleteMatches : invalid object', TypeError);
+        _.assert(!graph || this.factory.validGraph(graph), 'Dataset#deleteMatches : invalid graph', TypeError);
 
         const
             termIndex = this.#terms,

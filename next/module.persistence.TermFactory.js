@@ -1,5 +1,5 @@
 const
-    _             = require('./util.js'),
+    _             = require('./module.persistence.util.js'),
     _isPrefix     = _.strValidator(/^[a-z][a-z0-9+\-.]*$/i),
     _isIRI        = _.strValidator(/^[a-z][a-z0-9+\-.]*:\S+$/i),
     _isIdentifier = _.strValidator(/^\S+$/),
@@ -175,6 +175,7 @@ class TermFactory {
     } // TermFactory#isBlankNode
 
     literal(value, langOrDt) {
+        _.assert(_.isString(value), 'TermFactory#literal : invalid value', TypeError);
         if (!langOrDt) {
             return new Literal(value, '', this.#default.xsd_string);
         } else if (_.isString(langOrDt)) {
@@ -295,10 +296,10 @@ class TermFactory {
         );
     } // TermFactory#fromQuad
 
-    stringToTerm(termStr) {
-        _.assert(_.isString(termStr), 'TermFactory#stringToTerm : invalid termStr', TypeError);
+    fromString(termStr) {
+        _.assert(_.isString(termStr), 'TermFactory#fromString : invalid termStr', TypeError);
         const termRes = termStr.match(/^(\w+)<(.*)>$/s);
-        _.assert(termRes, 'TermFactory#stringToTerm : invalid syntax');
+        _.assert(termRes, 'TermFactory#fromString : invalid syntax');
         const termType = termRes[1], termVal = termRes[2];
         switch (termType) {
             case 'NamedNode':
@@ -307,7 +308,7 @@ class TermFactory {
                 return this.blankNode(termVal);
             case 'Literal':
                 const litRes = termVal.match(/^(.*),([a-z-]*),NamedNode<(\S+)>$/si);
-                _.assert(litRes, 'TermFactory#stringToTerm : invalid literal syntax');
+                _.assert(litRes, 'TermFactory#fromString : invalid literal syntax');
                 const litVal = litRes[1], langOrDt = litRes[2] || this.namedNode(litRes[3]);
                 return this.literal(litVal, langOrDt);
             case 'Variable':
@@ -316,17 +317,17 @@ class TermFactory {
                 return this.defaultGraph();
             case 'Quad':
                 const quadRes = termVal.match(/^(\w+<.*>),(\w+<.*>),(\w+<.*>),(\w+<.*>)$/s);
-                _.assert(quadRes, 'TermFactory#stringToTerm : invalid quad syntax');
+                _.assert(quadRes, 'TermFactory#fromString : invalid quad syntax');
                 return this.quad(
-                    this.stringToTerm(quadRes[1]),
-                    this.stringToTerm(quadRes[2]),
-                    this.stringToTerm(quadRes[3]),
-                    this.stringToTerm(quadRes[4])
+                    this.fromString(quadRes[1]),
+                    this.fromString(quadRes[2]),
+                    this.fromString(quadRes[3]),
+                    this.fromString(quadRes[4])
                 );
             default:
-                _.assert(false, 'TermFactory#stringToTerm : unknown termType ' + termType);
+                _.assert(false, 'TermFactory#fromString : unknown termType ' + termType);
         }
-    } // TermFactory#stringToTerm
+    } // TermFactory#fromString
 
 } // TermFactory
 

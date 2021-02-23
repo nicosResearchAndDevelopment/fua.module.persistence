@@ -1,6 +1,6 @@
 const
-    _           = require('./util.js'),
-    TermFactory = require('./TermFactory.js');
+    _           = require('./module.persistence.util.js'),
+    TermFactory = require('./module.persistence.TermFactory.js');
 
 class DataFactory extends TermFactory {
 
