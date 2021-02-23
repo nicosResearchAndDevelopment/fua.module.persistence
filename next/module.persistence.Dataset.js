@@ -115,11 +115,12 @@ class Dataset {
     #terms = new TermIndex();
     #quads = new QuadIndex();
 
-    constructor(options = {}) {
-        _.assert(_.isObject(options), 'Dataset#constructor : invalid options', TypeError);
-        _.assert(!options.factory || options.factory instanceof TermFactory, 'Dataset#constructor : invalid options.factory', TypeError);
-        this.factory = options.factory || defaultFactory;
+    constructor(quads, factory) {
+        _.assert(!quads || _.isIterable(quads), 'Dataset#constructor : invalid quads', TypeError);
+        _.assert(!factory || factory instanceof TermFactory, 'Dataset#constructor : invalid factory', TypeError);
+        this.factory = factory || defaultFactory;
         _.lockProp(this, 'factory');
+        if (quads) this.add(quads);
     } // Dataset#constructor
 
     get size() {

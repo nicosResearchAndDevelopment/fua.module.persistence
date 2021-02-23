@@ -8,13 +8,12 @@ const
 
 class DataStore extends EventEmitter {
 
-    constructor(options = {}) {
+    constructor(options, factory) {
         _.assert(new.target !== DataStore, 'DataStore#constructor : abstract class');
         _.assert(_.isObject(options), 'DataStore#constructor : invalid options', TypeError);
-        _.assert(!options.factory || options.factory instanceof DataFactory, 'DataStore#constructor : invalid options.factory', TypeError);
-        _.assert(!options.url || _.isString(options.url), 'DataStore#constructor : invalid options.url', TypeError);
+        _.assert(!factory || factory instanceof DataFactory, 'DataStore#constructor : invalid factory', TypeError);
         super();
-        this.factory = options.factory || defaultFactory;
+        this.factory = factory || defaultFactory;
         _.lockProp(this, 'factory');
     } // DataStore#constructor
 

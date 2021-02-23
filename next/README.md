@@ -107,12 +107,8 @@ interface DataFactory extends TermFactory {
 ### Dataset
 
 ```ts
-interface DatasetOptions {
-    factory?: TermFactory;
-};
-
 interface Dataset extends Iterable<Quad> {
-    constructor(quads?: Iterable<Quad>, options?: DatasetOptions): Dataset;
+    constructor(quads?: Iterable<Quad>, factory?: TermFactory): Dataset;
     factory: TermFactory;
     
     size: number;
@@ -149,13 +145,8 @@ interface Dataset extends Iterable<Quad> {
 ### DataStore
 
 ```ts
-interface DataStoreOptions {
-    url: string;
-    factory?: DataFactory;
-};
-
 interface DataStore extends EventEmitter {
-    constructor(options: DataStoreOptions): DataStore;
+    constructor(options: Object, factory?: DataFactory): DataStore;
     factory: DataFactory;
     
     size(): Promise<number>;
