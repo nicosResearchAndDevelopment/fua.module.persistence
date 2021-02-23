@@ -27,13 +27,13 @@ class DataStore extends EventEmitter {
         _.assert(!predicate || this.factory.validPredicate(predicate), 'DataStore#match : invalid predicate', TypeError);
         _.assert(!object || this.factory.validObject(object), 'DataStore#match : invalid object', TypeError);
         _.assert(!graph || this.factory.validGraph(graph), 'DataStore#match : invalid graph', TypeError);
-        return new Dataset(null, {factory: this.factory});
+        return new Dataset(null, this.factory);
     } // DataStore#match
 
     async add(quads) {
         _.assert(this.add !== DataStore.prototype.add, 'DataStore#add : abstract method');
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
-        _.assert(quadArr.every(this.factory.validQuad), 'DataStore#add : invalid quads', TypeError);
+        _.assert(quadArr.every(this.factory.validQuad.bind(this.factory)), 'DataStore#add : invalid quads', TypeError);
         return quadArr;
     } // DataStore#add
 
@@ -46,7 +46,7 @@ class DataStore extends EventEmitter {
     async delete(quads) {
         _.assert(this.delete !== DataStore.prototype.delete, 'DataStore#delete : abstract method');
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
-        _.assert(quadArr.every(this.factory.validQuad), 'DataStore#delete : invalid quads', TypeError);
+        _.assert(quadArr.every(this.factory.validQuad.bind(this.factory)), 'DataStore#delete : invalid quads', TypeError);
         return quadArr;
     } // DataStore#delete
 
@@ -67,7 +67,7 @@ class DataStore extends EventEmitter {
     async has(quads) {
         _.assert(this.has !== DataStore.prototype.has, 'DataStore#has : abstract method');
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
-        _.assert(quadArr.every(this.factory.validQuad), 'DataStore#has : invalid quads', TypeError);
+        _.assert(quadArr.every(this.factory.validQuad.bind(this.factory)), 'DataStore#has : invalid quads', TypeError);
         return quadArr;
     } // DataStore#has
 

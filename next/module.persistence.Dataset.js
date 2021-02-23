@@ -265,7 +265,7 @@ class Dataset {
     add(quads) {
         /** @type {Array<Quad>} */
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
-        _.assert(quadArr.every(this.factory.validQuad), 'Dataset#add : invalid quads', TypeError);
+        _.assert(quadArr.every(this.factory.validQuad.bind(this.factory)), 'Dataset#add : invalid quads', TypeError);
 
         const
             termIndex = this.#terms,
