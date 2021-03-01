@@ -166,3 +166,19 @@ interface DataStore extends EventEmitter {
     on(event: "error", callback: (err: Error) => void): this;
 };
 ```
+
+### Transformer
+
+> __NOTES SPE:__
+> 
+> Parsers:
+> - from TTL to Quads
+> - from JSON-LD to Quads
+> 
+> Serializers:
+> - Quads to TTL
+> - Quads to JSON-LD
+> 
+> Transformers:
+> - Quads to Graph-Data-Structure
+> - Dataset to Shacl-Report
