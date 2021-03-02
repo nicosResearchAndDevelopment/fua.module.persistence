@@ -227,10 +227,6 @@ class Dataset {
             if (!other.has(quad))
                 result.add(quad);
         }
-        for (let quad of other) {
-            if (!this.has(quad))
-                result.add(quad);
-        }
         return result;
     } // Dataset#difference
 
