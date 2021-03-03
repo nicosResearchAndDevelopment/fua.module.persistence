@@ -12,6 +12,8 @@ persistence.wrapFactory = (factory) => ({
     variable:     (name) => factory.variable(name),
     defaultGraph: () => factory.defaultGraph(),
     quad:         (subj, pred, obj, graph) => factory.quad(subj, pred, obj, graph),
+    fromTerm:     (orig) => factory.fromTerm(orig),
+    fromQuad:     (orig) => factory.fromQuad(orig),
     dataset:      (quads) => new persistence.Dataset(quads, factory)
 });
 
