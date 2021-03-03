@@ -1,7 +1,7 @@
 const
     {describe, test, before} = require('mocha'),
     expect                   = require('expect'),
-    {Dataset, TermFactory}   = require('../next/module.persistence.js');
+    {Dataset, TermFactory}   = require('../src/module.persistence.js');
 
 describe('module.persistence : Dataset', function () {
 
@@ -11,12 +11,12 @@ describe('module.persistence : Dataset', function () {
     });
 
     test('should have a TermFactory attribute', async function () {
-
+        expect(dataset.factory).toBeInstanceOf(TermFactory);
     });
 
     test('should add a NamedNode', async function () {
         dataset.add(dataset.factory.namedNode('ex:test'));
-        expect(dataset.has(factory.namedNode('ex:test'))).toBeTruthy();
+        expect(dataset.has(dataset.factory.namedNode('ex:test'))).toBeTruthy();
     });
 
 }); // describe

@@ -1,7 +1,7 @@
 const
     {describe, test, before} = require('mocha'),
     expect                   = require('expect'),
-    {TermFactory}            = require('../next/module.persistence.js'),
+    {TermFactory}            = require('../src/module.persistence.js'),
     context                  = require('./data/context.json');
 
 describe('module.persistence : TermFactory', function () {
@@ -91,8 +91,7 @@ describe('module.persistence : TermFactory', function () {
             });
         });
 
-        test.skip('should build a BlankNode with no argument and generate a random Id', async function () {
-            // TODO this behaviour is not finalized yet
+        test('should build a BlankNode with no argument and generate a random Id', async function () {
             expect(factory.blankNode()).toMatchObject({
                 termType: 'BlankNode'
             });
@@ -101,7 +100,6 @@ describe('module.persistence : TermFactory', function () {
         });
 
         test('should throw building a BlankNode with anything but an Id', async function () {
-            expect(() => factory.blankNode()).toThrow(Error);
             expect(() => factory.blankNode({'@id': 'Test'})).toThrow(Error);
             expect(() => factory.blankNode('Hello World!')).toThrow(Error);
         });
