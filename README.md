@@ -67,7 +67,7 @@ interface TermFactory {
     context(): Context;
     
     namedNode(iri: string): NamedNode;
-    blankNode(id: string): BlankNode;
+    blankNode(id?: string): BlankNode;
     literal(value: string, langOrDt?: string | NamedNode): Literal;
     variable(name: string): Variable;
     defaultGraph(): DefaultGraph;

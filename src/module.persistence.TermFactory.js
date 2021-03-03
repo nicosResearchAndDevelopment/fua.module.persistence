@@ -1,5 +1,6 @@
 const
     _             = require('./module.persistence.util.js'),
+    uuid          = require('@nrd/fua.core.uuid'),
     _isPrefix     = _.strValidator(/^[a-z][a-z0-9+\-.]*$/i),
     _isIRI        = _.strValidator(/^[a-z][a-z0-9+\-.]*:\S+$/i),
     _isIdentifier = _.strValidator(/^\S+$/),
@@ -166,6 +167,7 @@ class TermFactory {
     } // TermFactory#isNamedNode
 
     blankNode(id) {
+        if (!id) id = uuid.v1();
         _.assert(_isIdentifier(id), 'TermFactory#blankNode : invalid id', TypeError);
         return new BlankNode(id);
     } // TermFactory#blankNode
