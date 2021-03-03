@@ -4,7 +4,7 @@ const
 
 class DataFactory extends TermFactory {
 
-    variable() {
+    variable(name) {
         _.assert(false, 'DataFactory#variable : not supported');
         return null;
     } // DataFactory#variable

@@ -115,6 +115,10 @@ class Dataset {
     #terms = new TermIndex();
     #quads = new QuadIndex();
 
+    /**
+     * @param {Iterable<Quad>} [quads]
+     * @param {TermFactory} [factory]
+     */
     constructor(quads, factory) {
         _.assert(!quads || _.isIterable(quads), 'Dataset#constructor : invalid quads', TypeError);
         _.assert(!factory || factory instanceof TermFactory, 'Dataset#constructor : invalid factory', TypeError);
@@ -123,10 +127,15 @@ class Dataset {
         if (quads) this.add(quads);
     } // Dataset#constructor
 
+    /** @type {number} */
     get size() {
         return this.#quads.size;
     } // Dataset#size
 
+    /**
+     * @param {function(Quad, Dataset): void} iteratee
+     * @returns void
+     */
     forEach(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#forEach : invalid iteratee', TypeError);
         for (let quad of this) {
@@ -134,6 +143,10 @@ class Dataset {
         }
     } // Dataset#forEach
 
+    /**
+     * @param {function(Quad, Dataset): boolean} iteratee
+     * @returns Dataset
+     */
     filter(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#filter : invalid iteratee', TypeError);
         const result = new Dataset(null, this.factory);
@@ -144,6 +157,10 @@ class Dataset {
         return result;
     } // Dataset#filter
 
+    /**
+     * @param {function(Quad, Dataset): Quad} iteratee
+     * @returns Dataset
+     */
     map(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#map : invalid iteratee', TypeError);
         const result = new Dataset(null, this.factory);
@@ -153,6 +170,11 @@ class Dataset {
         return result;
     } // Dataset#map
 
+    /**
+     * @param {function(any, Quad, Dataset): any} iteratee
+     * @param {any} [acc]
+     * @returns any
+     */
     reduce(iteratee, acc) {
         _.assert(_.isFunction(iteratee), 'Dataset#reduce : invalid iteratee', TypeError);
         let pipeAcc = (acc === undefined);
@@ -167,6 +189,13 @@ class Dataset {
         return acc;
     } // Dataset#reduce
 
+    /**
+     * @param {Term} [subject]
+     * @param {Term} [predicate]
+     * @param {Term} [object]
+     * @param {Term} [graph]
+     * @returns {Dataset}
+     */
     match(subject, predicate, object, graph) {
         _.assert(!subject || this.factory.validSubject(subject), 'Dataset#match : invalid subject', TypeError);
         _.assert(!predicate || this.factory.validPredicate(predicate), 'Dataset#match : invalid predicate', TypeError);
@@ -198,6 +227,10 @@ class Dataset {
         return result;
     } // Dataset#match
 
+    /**
+     * @param {Dataset} other
+     * @returns {Dataset}
+     */
     union(other) {
         _.assert(other instanceof Dataset, 'Dataset#union : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
@@ -210,6 +243,10 @@ class Dataset {
         return result;
     } // Dataset#union
 
+    /**
+     * @param {Dataset} other
+     * @returns {Dataset}
+     */
     intersection(other) {
         _.assert(other instanceof Dataset, 'Dataset#intersection : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
@@ -220,6 +257,10 @@ class Dataset {
         return result;
     } // Dataset#intersection
 
+    /**
+     * @param {Dataset} other
+     * @returns {Dataset}
+     */
     difference(other) {
         _.assert(other instanceof Dataset, 'Dataset#difference : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
@@ -230,6 +271,9 @@ class Dataset {
         return result;
     } // Dataset#difference
 
+    /**
+     * @returns {Iterator<Quad>}
+     */
     * [Symbol.iterator]() {
         const
             termIndex    = this.#terms,
@@ -246,18 +290,31 @@ class Dataset {
         }
     } // Dataset#@@iterator
 
+    /**
+     * @returns {Iterator<Quad>}
+     */
     quads() {
         return this[Symbol.iterator]();
     } // Dataset#quads
 
+    /**
+     * @returns {Array<Quad>}
+     */
     toArray() {
         return Array.from(this);
     } // Dataset#toArray
 
+    /**
+     * @returns {Readable<Quad>}
+     */
     toStream() {
         return Readable.from(this);
     } // Dataset#toStream
 
+    /**
+     * @param {Quad|Iterable<Quad>} quads
+     * @returns {number}
+     */
     add(quads) {
         /** @type {Array<Quad>} */
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
@@ -282,6 +339,10 @@ class Dataset {
         return addCount;
     } // Dataset#add
 
+    /**
+     * @param {Readable<Quad>} stream
+     * @returns {Promise<number>}
+     */
     async addStream(stream) {
         const quads = [];
         await new Promise((resolve) => {
@@ -291,6 +352,10 @@ class Dataset {
         return this.add(quads);
     } // Dataset#addStream
 
+    /**
+     * @param {Quad|Iterable<Quad>} quads
+     * @returns {number}
+     */
     delete(quads) {
         /** @type {Array<Quad>} */
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
@@ -316,6 +381,10 @@ class Dataset {
         return delCount;
     } // Dataset#delete
 
+    /**
+     * @param {Readable<Quad>} stream
+     * @returns {Promise<number>}
+     */
     async deleteStream(stream) {
         const quads = [];
         await new Promise((resolve) => {
@@ -325,6 +394,13 @@ class Dataset {
         return this.delete(quads);
     } // Dataset#deleteStream
 
+    /**
+     * @param {Term} [subject]
+     * @param {Term} [predicate]
+     * @param {Term} [object]
+     * @param {Term} [graph]
+     * @returns {number}
+     */
     deleteMatches(subject, predicate, object, graph) {
         _.assert(!subject || this.factory.validSubject(subject), 'Dataset#deleteMatches : invalid subject', TypeError);
         _.assert(!predicate || this.factory.validPredicate(predicate), 'Dataset#deleteMatches : invalid predicate', TypeError);
@@ -352,6 +428,10 @@ class Dataset {
         return delCount;
     } // Dataset#deleteMatches
 
+    /**
+     * @param {Quad|Iterable<Quad>} quads
+     * @returns {boolean}
+     */
     has(quads) {
         /** @type {Array<Quad>} */
         const quadArr = this.factory.isQuad(quads) ? [quads] : _.isArray(quads) ? quads : Array.from(quads);
@@ -376,16 +456,28 @@ class Dataset {
         return true;
     } // Dataset#has
 
+    /**
+     * @param {Dataset} other
+     * @returns {boolean}
+     */
     equals(other) {
         _.assert(other instanceof Dataset, 'Dataset#equals : invalid other', TypeError);
         return this.has(other) && other.has(this);
     } // Dataset#equals
 
+    /**
+     * @param {Dataset} other
+     * @returns {boolean}
+     */
     contains(other) {
         _.assert(other instanceof Dataset, 'Dataset#contains : invalid other', TypeError);
         return this.has(other);
     } // Dataset#contains
 
+    /**
+     * @param {function(Quad, Dataset): boolean} iteratee
+     * @returns {boolean}
+     */
     every(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#every : invalid iteratee', TypeError);
         for (let quad of this) {
@@ -395,6 +487,10 @@ class Dataset {
         return true;
     } // Dataset#every
 
+    /**
+     * @param {function(Quad, Dataset): boolean} iteratee
+     * @returns {boolean}
+     */
     some(iteratee) {
         _.assert(_.isFunction(iteratee), 'Dataset#some : invalid iteratee', TypeError);
         for (let quad of this) {

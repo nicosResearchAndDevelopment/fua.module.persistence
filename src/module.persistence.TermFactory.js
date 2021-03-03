@@ -122,6 +122,9 @@ class TermFactory {
     #default = Object.create(null);
     #context = new Map();
 
+    /**
+     * @param {Object<string, string>} [context={}]
+     */
     constructor(context = {}) {
         _.assert(_.isObject(context), 'TermFactory#constructor : invalid context', TypeError);
 
@@ -142,14 +145,25 @@ class TermFactory {
         Object.freeze(this.#default);
     } // TermFactory#context
 
+    /**
+     * @returns {Object<string, string>}
+     */
     context() {
         return Object.fromEntries(this.#context);
     } // TermFactory#context
 
+    /**
+     * @param {Term} term
+     * @returns {boolean}
+     */
     isTerm(term) {
         return term instanceof Term;
     } // TermFactory#isTerm
 
+    /**
+     * @param {string} iri
+     * @returns {NamedNode}
+     */
     namedNode(iri) {
         _.assert(_isIRI(iri), 'TermFactory#namedNode : invalid iri', TypeError);
         for (let [_prefix, _iri] of this.#context) {
@@ -162,20 +176,37 @@ class TermFactory {
         return new NamedNode(iri);
     } // TermFactory#namedNode
 
+    /**
+     * @param {Term|NamedNode} term
+     * @returns {boolean}
+     */
     isNamedNode(term) {
         return term instanceof NamedNode;
     } // TermFactory#isNamedNode
 
+    /**
+     * @param {string} id
+     * @returns {BlankNode}
+     */
     blankNode(id) {
         if (!id) id = uuid.v1();
         _.assert(_isIdentifier(id), 'TermFactory#blankNode : invalid id', TypeError);
         return new BlankNode(id);
     } // TermFactory#blankNode
 
+    /**
+     * @param {Term|BlankNode} term
+     * @returns {boolean}
+     */
     isBlankNode(term) {
         return term instanceof BlankNode;
     } // TermFactory#isBlankNode
 
+    /**
+     * @param {string} value
+     * @param {string|NamedNode} langOrDt
+     * @returns {Literal}
+     */
     literal(value, langOrDt) {
         _.assert(_.isString(value), 'TermFactory#literal : invalid value', TypeError);
         if (!langOrDt) {
@@ -189,36 +220,72 @@ class TermFactory {
         }
     } // TermFactory#literal
 
+    /**
+     * @param {Term|Literal} term
+     * @returns {boolean}
+     */
     isLiteral(term) {
         return term instanceof Literal;
     } // TermFactory#isLiteral
 
+    /**
+     * @param {string} name
+     * @returns {Variable}
+     */
     variable(name) {
         _.assert(_isVariable(name), 'TermFactory#variable : invalid name', TypeError);
         return new Variable(name);
     } // TermFactory#variable
 
+    /**
+     * @param {Term|Variable} term
+     * @returns {boolean}
+     */
     isVariable(term) {
         return term instanceof Variable;
     } // TermFactory#isVariable
 
+    /**
+     * @returns {DefaultGraph}
+     */
     defaultGraph() {
         return this.#default.defaultGraph;
     } // TermFactory#defaultGraph
 
+    /**
+     * @param {Term|DefaultGraph} term
+     * @returns {boolean}
+     */
     isDefaultGraph(term) {
         return term instanceof DefaultGraph;
     } // TermFactory#isDefaultGraph
 
+    /**
+     * @param {Term} subject
+     * @param {Term} predicate
+     * @param {Term} object
+     * @returns {Quad}
+     */
     tripel(subject, predicate, object) {
         return this.quad(subject, predicate, object, this.defaultGraph());
     } // TermFactory#tripel
 
+    /**
+     * @param {Term|Quad} term
+     * @returns {boolean}
+     */
     isTripel(term) {
         return this.isQuad(term)
             && this.isDefaultGraph(term.graph);
     } // TermFactory#isTripel
 
+    /**
+     * @param {Term} subject
+     * @param {Term} predicate
+     * @param {Term} object
+     * @param {Term} [graph]
+     * @returns {Quad}
+     */
     quad(subject, predicate, object, graph) {
         _.assert(this.validSubject(subject), 'TermFactory#quad : invalid subject', TypeError);
         _.assert(this.validPredicate(predicate), 'TermFactory#quad : invalid predicate', TypeError);
@@ -227,21 +294,37 @@ class TermFactory {
         return new Quad(subject, predicate, object, graph || this.defaultGraph());
     } // TermFactory#quad
 
+    /**
+     * @param {Term|Quad} term
+     * @returns {boolean}
+     */
     isQuad(term) {
         return term instanceof Quad;
     } // TermFactory#isQuad
 
+    /**
+     * @param {Term} term
+     * @returns {boolean}
+     */
     validSubject(term) {
         return this.isNamedNode(term)
             || this.isBlankNode(term)
             || this.isVariable(term);
     } // TermFactory#validSubject
 
+    /**
+     * @param {Term} term
+     * @returns {boolean}
+     */
     validPredicate(term) {
         return this.isNamedNode(term)
             || this.isVariable(term);
     } // TermFactory#validPredicate
 
+    /**
+     * @param {Term} term
+     * @returns {boolean}
+     */
     validObject(term) {
         return this.isNamedNode(term)
             || this.isLiteral(term)
@@ -249,12 +332,20 @@ class TermFactory {
             || this.isVariable(term);
     } // TermFactory#validObject
 
+    /**
+     * @param {Term} term
+     * @returns {boolean}
+     */
     validGraph(term) {
         return this.isNamedNode(term)
             || this.isDefaultGraph(term)
             || this.isVariable(term);
     } // TermFactory#validGraph
 
+    /**
+     * @param {Quad} term
+     * @returns {boolean}
+     */
     validQuad(term) {
         return this.isQuad(term)
             && this.validSubject(term.subject)
@@ -263,6 +354,10 @@ class TermFactory {
             && this.validGraph(term.graph);
     } // TermFactory#validQuad
 
+    /**
+     * @param {{termType: string, value?: string, language?: string, datatype?: Object}} original
+     * @returns {Term}
+     */
     fromTerm(original) {
         _.assert(_.isObject(original), 'TermFactory#fromTerm : invalid original', TypeError);
         if (this.isTerm(original)) return original;
@@ -286,6 +381,10 @@ class TermFactory {
         }
     } // TermFactory#fromTerm
 
+    /**
+     * @param {{termType?: "Quad", subject: Object, predicate: Object, object: Object, graph?: Object}} original
+     * @returns {Quad}
+     */
     fromQuad(original) {
         _.assert(_.isObject(original), 'TermFactory#fromQuad : invalid original', TypeError);
         if (this.isQuad(original)) return original;
@@ -298,6 +397,10 @@ class TermFactory {
         );
     } // TermFactory#fromQuad
 
+    /**
+     * @param {string} termStr
+     * @returns {Term}
+     */
     fromString(termStr) {
         _.assert(_.isString(termStr), 'TermFactory#fromString : invalid termStr', TypeError);
         const termRes = termStr.match(/^(\w+)<(.*)>$/s);
