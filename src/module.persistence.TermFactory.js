@@ -355,12 +355,15 @@ class TermFactory {
     } // TermFactory#validQuad
 
     /**
+     * Converts an object representation of a term into a Term object.
+     * Especially TermFactory#fromTerm(JSON.parse(JSON.stringify(term))).equals(term) = true
      * @param {{termType: string, value?: string, language?: string, datatype?: Object}} original
      * @returns {Term}
      */
     fromTerm(original) {
         _.assert(_.isObject(original), 'TermFactory#fromTerm : invalid original', TypeError);
-        if (this.isTerm(original)) return original;
+        // REM: better for performance, but only viable with factory check:
+        // if (this.isTerm(original)) return original;
         _.assert(_.isString(original.termType), 'TermFactory#fromTerm : invalid termType', TypeError);
         switch (original.termType) {
             case 'NamedNode':
@@ -382,12 +385,15 @@ class TermFactory {
     } // TermFactory#fromTerm
 
     /**
+     * Converts an object representation of a quad into a Quad object.
+     * Especially TermFactory#fromQuad(JSON.parse(JSON.stringify(quad))).equals(quad) = true
      * @param {{termType?: "Quad", subject: Object, predicate: Object, object: Object, graph?: Object}} original
      * @returns {Quad}
      */
     fromQuad(original) {
         _.assert(_.isObject(original), 'TermFactory#fromQuad : invalid original', TypeError);
-        if (this.isQuad(original)) return original;
+        // REM: better for performance, but only viable with factory check:
+        // if (this.isQuad(original)) return original;
         _.assert(!original.termType || original.termType === 'Quad', 'TermFactory#fromQuad : invalid termType', TypeError);
         return this.quad(
             this.fromTerm(original.subject),
@@ -398,6 +404,8 @@ class TermFactory {
     } // TermFactory#fromQuad
 
     /**
+     * Converts a string representation of a term into a Term object.
+     * Especially TermFactory#fromString(term.toString()).equals(term) = true
      * @param {string} termStr
      * @returns {Term}
      */
@@ -433,6 +441,50 @@ class TermFactory {
                 _.assert(false, 'TermFactory#fromString : unknown termType ' + termType);
         }
     } // TermFactory#fromString
+
+    /**
+     * Converts a regular Term into a Term without prefixed values.
+     * @param {Term} term
+     * @returns {Term}
+     */
+    resolveTerm(term) {
+        _.assert(this.isTerm(term), 'TermFactory#resolveTerm : invalid term', TypeError);
+        switch (term.termType) {
+            case 'NamedNode':
+                for (let prefix of this.#context.keys()) {
+                    if (term.value.startsWith(prefix + ':')) {
+                        return new NamedNode(this.#context.get(prefix) + term.value.substr(prefix.length + 1));
+                    }
+                }
+                return term;
+
+            case 'Literal':
+                return new Literal(term.value, term.language, this.$serialize2(term.datatype));
+
+            case 'BlankNode':
+            case 'Variable':
+            case 'DefaultGraph':
+                return term;
+
+            case 'Quad':
+                return this.resolveQuad(term);
+        } // switch
+    } // TermFactory#resolveTerm
+
+    /**
+     * Converts a regular Quad into a Quad without prefixed values.
+     * @param {Quad} quad
+     * @returns {Quad}
+     */
+    resolveQuad(quad) {
+        _.assert(this.isQuad(quad), 'TermFactory#resolveQuad : invalid quad', TypeError);
+        return new Quad(
+            this.resolveTerm(quad.subject),
+            this.resolveTerm(quad.predicate),
+            this.resolveTerm(quad.object),
+            this.resolveTerm(quad.graph)
+        );
+    } // TermFactory#resolveQuad
 
 } // TermFactory
 
