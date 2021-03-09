@@ -1,11 +1,15 @@
 const
-    _             = require('./module.persistence.util.js'),
-    uuid          = require('@nrd/fua.core.uuid'),
-    _isPrefix     = _.strValidator(/^[a-z][a-z0-9+\-.]*$/i),
-    _isIRI        = _.strValidator(/^[a-z][a-z0-9+\-.]*:\S+$/i),
-    _isIdentifier = _.strValidator(/^\S+$/),
-    _isVariable   = _.strValidator(/^[a-z]\w*$/i),
-    _isLanguage   = _.strValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i);
+    _                 = require('./module.persistence.util.js'),
+    uuid              = require('@nrd/fua.core.uuid'),
+    {StringValidator} = require('@nrd/fua.core.util'),
+    _isPrefix         = new StringValidator(/^[a-z][a-z0-9+\-.]*$/i),
+    _isIRI            = new StringValidator(/^[a-z][a-z0-9+\-.]*:\S+$/i),
+    _isIdentifier     = new StringValidator(/^\S+$/),
+    _isVariable       = new StringValidator(/^[a-z]\w*$/i),
+    _isLanguage       = new StringValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i),
+    _reservedPrefixes = Object.freeze([
+        'http', 'https', '_'
+    ]);
 
 //#region >> DataModel
 
@@ -130,6 +134,7 @@ class TermFactory {
 
         for (let [prefix, iri] of Object.entries(context)) {
             _.assert(_isPrefix(prefix), 'TermFactory#constructor : invalid prefix', TypeError);
+            _.assert(!_reservedPrefixes.includes(prefix), 'TermFactory#constructor : reserved prefix ' + prefix);
             _.assert(_isIRI(iri), 'TermFactory#constructor : invalid iri', TypeError);
             for (let [_prefix, _iri] of this.#context) {
                 _.assert(prefix !== _prefix, 'TermFactory#constructor : duplicate prefix ' + prefix);
