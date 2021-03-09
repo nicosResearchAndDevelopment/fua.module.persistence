@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/module.persistence.js",
   "dependencies": {
-    "@nrd/fua.core.uuid": "1.0.0"
+    "@nrd/fua.core.uuid": "1.0.0",
+    "@nrd/fua.core.util": "1.0.0"
   },
   "devDependencies": {
     "mocha": "^8.2.1",
