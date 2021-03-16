@@ -77,6 +77,10 @@ interface TermFactory {
     fromTerm(original: Term): Term;
     fromQuad(original: Quad): Quad;
     fromString(termStr: string): Term;
+    
+    // TODO rethink resolve methods -> intended to get un-prefixed terms for serialization
+    resolveTerm(term: Term): Term;
+    resolveQuad(quad: Quad): Quad;
 
     isTerm(that: Term | any): boolean;
     isNamedNode(that: NamedNode | any): boolean;
