@@ -464,7 +464,7 @@ class TermFactory {
                 return term;
 
             case 'Literal':
-                return new Literal(term.value, term.language, this.$serialize2(term.datatype));
+                return new Literal(term.value, term.language, this.resolveTerm(term.datatype));
 
             case 'BlankNode':
             case 'Variable':
