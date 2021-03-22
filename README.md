@@ -79,6 +79,7 @@ interface TermFactory {
     fromString(termStr: string): Term;
     
     // TODO rethink resolve methods -> intended to get un-prefixed terms for serialization
+    // IDEA use an arbitrary factory as second parameter resolve terms and quads, maybe with defaultFactory
     resolveTerm(term: Term): Term;
     resolveQuad(quad: Quad): Quad;
 
