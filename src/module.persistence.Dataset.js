@@ -227,45 +227,97 @@ class Dataset {
         return result;
     } // Dataset#match
 
+    // REM: rework version below => look out for bugs
+    ///**
+    // * @param {Dataset} other
+    // * @returns {Dataset}
+    // */
+    //union(other) {
+    //    _.assert(other instanceof Dataset, 'Dataset#union : invalid other', TypeError);
+    //    const result = new Dataset(null, this.factory);
+    //    for (let quad of this) {
+    //        result.add(quad);
+    //    }
+    //    for (let quad of other) {
+    //        result.add(quad);
+    //    }
+    //    return result;
+    //} // Dataset#union
+
     /**
-     * @param {Dataset} other
+     * @param {...Dataset} others
      * @returns {Dataset}
      */
-    union(other) {
-        _.assert(other instanceof Dataset, 'Dataset#union : invalid other', TypeError);
+    union(...others) {
+        _.assert(others.length > 0, 'Dataset#intersection : no other supplied');
+        _.assert(others.every(other => other instanceof Dataset), 'Dataset#union : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
         for (let quad of this) {
             result.add(quad);
         }
-        for (let quad of other) {
-            result.add(quad);
+        for (let other of others) {
+            for (let quad of other) {
+                result.add(quad);
+            }
         }
         return result;
     } // Dataset#union
 
+    // REM: rework version below => look out for bugs
+    ///**
+    // * @param {Dataset} other
+    // * @returns {Dataset}
+    // */
+    //intersection(other) {
+    //    _.assert(other instanceof Dataset, 'Dataset#intersection : invalid other', TypeError);
+    //    const result = new Dataset(null, this.factory);
+    //    for (let quad of this) {
+    //        if (other.has(quad))
+    //            result.add(quad);
+    //    }
+    //    return result;
+    //} // Dataset#intersection
+
     /**
-     * @param {Dataset} other
+     * @param {...Dataset} others
      * @returns {Dataset}
      */
-    intersection(other) {
-        _.assert(other instanceof Dataset, 'Dataset#intersection : invalid other', TypeError);
+    intersection(...others) {
+        _.assert(others.length > 0, 'Dataset#intersection : no other supplied');
+        _.assert(others.every(other => other instanceof Dataset), 'Dataset#intersection : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
         for (let quad of this) {
-            if (other.has(quad))
+            if (others.every(other => other.has(quad)))
                 result.add(quad);
         }
         return result;
     } // Dataset#intersection
 
+    // REM: rework version below => look out for bugs
+    ///**
+    // * @param {Dataset} other
+    // * @returns {Dataset}
+    // */
+    //difference(other) {
+    //    _.assert(other instanceof Dataset, 'Dataset#difference : invalid other', TypeError);
+    //    const result = new Dataset(null, this.factory);
+    //    for (let quad of this) {
+    //        if (!other.has(quad))
+    //            result.add(quad);
+    //    }
+    //    return result;
+    //} // Dataset#difference
+
     /**
-     * @param {Dataset} other
+     * @param {...Dataset} others
      * @returns {Dataset}
      */
-    difference(other) {
-        _.assert(other instanceof Dataset, 'Dataset#difference : invalid other', TypeError);
+    difference(...others) {
+        _.assert(others.length > 0, 'Dataset#difference : no other supplied');
+        _.assert(others.every(other => other instanceof Dataset), 'Dataset#difference : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
         for (let quad of this) {
-            if (!other.has(quad))
+            if (!others.some(other => other.has(quad)))
                 result.add(quad);
         }
         return result;

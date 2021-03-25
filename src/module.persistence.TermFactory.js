@@ -491,6 +491,31 @@ class TermFactory {
         );
     } // TermFactory#resolveQuad
 
+    termToId(term) {
+        _.assert(this.isTerm(term), 'TermFactory#termToId : invalid term', TypeError);
+        switch (term.termType) {
+            case 'NamedNode':
+                return term.value;
+            case 'BlankNode':
+                return '_:' + term.value;
+            case 'Variable':
+                return '?' + term.value;
+            default:
+                _.assert(false, 'TermFactory#termToId : ' + term.termType + ' ist not supported');
+        }
+    } // TermFactory#termToId
+
+    termFromId(id) {
+        _.assert(_.isString(id), 'TermFactory#termFromId : invalid id', TypeError);
+        if (id.startsWith('_:')) {
+            return this.blankNode(id.substr(2));
+        } else if (id.startsWith('?')) {
+            return this.variable(id.substr(1));
+        } else {
+            return this.namedNode(id);
+        }
+    } // TermFactory#termFromId
+
 } // TermFactory
 
 module.exports = TermFactory;
