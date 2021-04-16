@@ -37,7 +37,7 @@ class TermIndex {
     } // TermIndex#getTerm
 
     entries() {
-        return Object.entries(this.terms).entries();
+        return Object.entries(this.terms).values();
     } // QuadIndex#entries
 
 } // TermIndex
@@ -138,7 +138,7 @@ class Dataset {
 
         for (let [key, term] of this.#terms.entries()) {
             for (let [prefix, iri] of contextEntries) {
-                if (this.factory.isNamedNode(term) && term.value.startsWith(iri) && !resultContext[prefix]) {
+                if (this.factory.isNamedNode(term) && term.value.startsWith(prefix + ':') && !resultContext[prefix]) {
                     resultContext[prefix] = iri;
                 }
             }
