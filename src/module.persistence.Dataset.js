@@ -36,6 +36,10 @@ class TermIndex {
         return this.terms[key];
     } // TermIndex#getTerm
 
+    entries() {
+        return Object.entries(this.terms).entries();
+    } // QuadIndex#entries
+
 } // TermIndex
 
 class QuadIndex {
@@ -126,6 +130,22 @@ class Dataset {
         _.lockProp(this, 'factory');
         if (quads) this.add(quads);
     } // Dataset#constructor
+
+    context() {
+        const
+            contextEntries = Object.entries(this.factory.context()),
+            resultContext  = {};
+
+        for (let [key, term] of this.#terms.entries()) {
+            for (let [prefix, iri] of contextEntries) {
+                if (this.factory.isNamedNode(term) && term.value.startsWith(iri) && !resultContext[prefix]) {
+                    resultContext[prefix] = iri;
+                }
+            }
+        }
+
+        return resultContext;
+    }
 
     /** @type {number} */
     get size() {

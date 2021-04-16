@@ -112,9 +112,14 @@ interface DataFactory extends TermFactory {
 ### Dataset
 
 ```ts
+interface Context {
+    [prefix: string]: string;
+};
+
 interface Dataset extends Iterable<Quad> {
     constructor(quads?: Iterable<Quad>, factory?: TermFactory): Dataset;
     factory: TermFactory;
+    context(): Context;
     
     size: number;
     
