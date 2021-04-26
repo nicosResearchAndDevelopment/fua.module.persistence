@@ -370,6 +370,70 @@ class Dataset {
     } // Dataset#quads
 
     /**
+     * @returns {Iterator<Term>}
+     */
+    subjects() {
+        const
+            termIndex    = this.#terms,
+            quadIndex    = this.#quads,
+            quadIterator = quadIndex.entries(),
+            subjects     = new Map();
+        for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
+            if (!subjects.has(subjKey))
+                subjects.set(subjKey, termIndex.getTerm(subjKey));
+        }
+        return subjects.values();
+    }
+
+    /**
+     * @returns {Iterator<Term>}
+     */
+    predicates() {
+        const
+            termIndex    = this.#terms,
+            quadIndex    = this.#quads,
+            quadIterator = quadIndex.entries(),
+            predicates   = new Map();
+        for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
+            if (!predicates.has(predKey))
+                predicates.set(predKey, termIndex.getTerm(predKey));
+        }
+        return predicates.values();
+    }
+
+    /**
+     * @returns {Iterator<Term>}
+     */
+    objects() {
+        const
+            termIndex    = this.#terms,
+            quadIndex    = this.#quads,
+            quadIterator = quadIndex.entries(),
+            objects      = new Map();
+        for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
+            if (!objects.has(objKey))
+                objects.set(objKey, termIndex.getTerm(objKey));
+        }
+        return objects.values();
+    }
+
+    /**
+     * @returns {Iterator<Term>}
+     */
+    graphs() {
+        const
+            termIndex    = this.#terms,
+            quadIndex    = this.#quads,
+            quadIterator = quadIndex.entries(),
+            graphs       = new Map();
+        for (let [graphKey, subjKey, predKey, objKey] of quadIterator) {
+            if (!graphs.has(graphKey))
+                graphs.set(graphKey, termIndex.getTerm(graphKey));
+        }
+        return graphs.values();
+    }
+
+    /**
      * @returns {Array<Quad>}
      */
     toArray() {
