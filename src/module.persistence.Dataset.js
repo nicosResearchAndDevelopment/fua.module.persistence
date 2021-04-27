@@ -269,6 +269,8 @@ class Dataset {
             graphKey  = graph ? termIndex.getKey(graph) : undefined;
 
         if (!subject !== !subjKey || !predicate !== !predKey || !object !== !objKey || !graph !== !graphKey)
+            return 0;
+        if (!subjKey && !predKey && !objKey && !graphKey)
             return this.size;
 
         const quadIterator = quadIndex.entries(graphKey, subjKey, predKey, objKey);
