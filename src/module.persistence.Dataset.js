@@ -247,6 +247,39 @@ class Dataset {
         return result;
     } // Dataset#match
 
+    /**
+     * @param {Term} [subject]
+     * @param {Term} [predicate]
+     * @param {Term} [object]
+     * @param {Term} [graph]
+     * @returns {number}
+     */
+    countMatches(subject, predicate, object, graph) {
+        _.assert(!subject || this.factory.validSubject(subject), 'Dataset#match : invalid subject', TypeError);
+        _.assert(!predicate || this.factory.validPredicate(predicate), 'Dataset#match : invalid predicate', TypeError);
+        _.assert(!object || this.factory.validObject(object), 'Dataset#match : invalid object', TypeError);
+        _.assert(!graph || this.factory.validGraph(graph), 'Dataset#match : invalid graph', TypeError);
+
+        const
+            termIndex = this.#terms,
+            quadIndex = this.#quads,
+            subjKey   = subject ? termIndex.getKey(subject) : undefined,
+            predKey   = predicate ? termIndex.getKey(predicate) : undefined,
+            objKey    = object ? termIndex.getKey(object) : undefined,
+            graphKey  = graph ? termIndex.getKey(graph) : undefined;
+
+        if (!subject !== !subjKey || !predicate !== !predKey || !object !== !objKey || !graph !== !graphKey)
+            return this.size;
+
+        const quadIterator = quadIndex.entries(graphKey, subjKey, predKey, objKey);
+        let count          = 0;
+        for (let entry of quadIterator) {
+            count++
+        }
+
+        return count;
+    } // Dataset#countMatches
+
     // REM: rework version below => look out for bugs
     ///**
     // * @param {Dataset} other
