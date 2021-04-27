@@ -305,11 +305,11 @@ class Dataset {
         _.assert(others.length > 0, 'Dataset#intersection : no other supplied');
         _.assert(others.every(other => other instanceof Dataset), 'Dataset#union : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
-        for (let quad of this) {
+        if (this.size > 0) for (let quad of this) {
             result.add(quad);
         }
         for (let other of others) {
-            for (let quad of other) {
+            if (other.size > 0) for (let quad of other) {
                 result.add(quad);
             }
         }
@@ -339,8 +339,8 @@ class Dataset {
         _.assert(others.length > 0, 'Dataset#intersection : no other supplied');
         _.assert(others.every(other => other instanceof Dataset), 'Dataset#intersection : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
-        for (let quad of this) {
-            if (others.every(other => other.has(quad)))
+        if (this.size > 0) for (let quad of this) {
+            if (others.every(other => other.size > 0 && other.has(quad)))
                 result.add(quad);
         }
         return result;
@@ -369,8 +369,8 @@ class Dataset {
         _.assert(others.length > 0, 'Dataset#difference : no other supplied');
         _.assert(others.every(other => other instanceof Dataset), 'Dataset#difference : invalid other', TypeError);
         const result = new Dataset(null, this.factory);
-        for (let quad of this) {
-            if (!others.some(other => other.has(quad)))
+        if (this.size > 0) for (let quad of this) {
+            if (!others.some(other => other.size > 0 && other.has(quad)))
                 result.add(quad);
         }
         return result;
