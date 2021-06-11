@@ -138,9 +138,9 @@ class Dataset {
 
         for (let [key, term] of this.#terms.entries()) {
             for (let [prefix, iri] of contextEntries) {
-                if (this.factory.isNamedNode(term) && term.value.startsWith(prefix + ':') && !resultContext[prefix]) {
-                    resultContext[prefix] = iri;
-                }
+                if (resultContext[prefix]) continue;
+                const term_iri = (this.factory.isNamedNode(term) && term.value) || (this.factory.isLiteral(term) && term.datatype.value);
+                if (term_iri && term_iri.startsWith(prefix + ':')) resultContext[prefix] = iri;
             }
         }
 
