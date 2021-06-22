@@ -136,11 +136,11 @@ class TermFactory {
             _.assert(_isPrefix(prefix), 'TermFactory#constructor : invalid prefix', TypeError);
             _.assert(!_reservedPrefixes.includes(prefix), 'TermFactory#constructor : reserved prefix ' + prefix);
             _.assert(_isIRI(iri), 'TermFactory#constructor : invalid iri', TypeError);
-            for (let [_prefix, _iri] of this.#context) {
-                _.assert(prefix !== _prefix, 'TermFactory#constructor : duplicate prefix ' + prefix);
-                _.assert(!iri.startsWith(_iri), 'TermFactory#constructor : related sub-iri ' + iri);
-                _.assert(!_iri.startsWith(iri), 'TermFactory#constructor : related sub-iri ' + _iri);
-            }
+            //for (let [_prefix, _iri] of this.#context) {
+            //    _.assert(prefix !== _prefix, 'TermFactory#constructor : duplicate prefix ' + prefix);
+            //    _.assert(!iri.startsWith(_iri), 'TermFactory#constructor : related sub-iri ' + iri);
+            //    _.assert(!_iri.startsWith(iri), 'TermFactory#constructor : related sub-iri ' + _iri);
+            //}
             this.#context.set(prefix, iri);
         }
 
@@ -148,7 +148,7 @@ class TermFactory {
         this.#default.xsd_string     = this.namedNode('http://www.w3.org/2001/XMLSchema#string');
         this.#default.rdf_langString = this.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
         Object.freeze(this.#default);
-    } // TermFactory#context
+    } // TermFactory#constructor
 
     /**
      * @returns {Object<string, string>}
@@ -171,13 +171,18 @@ class TermFactory {
      */
     namedNode(iri) {
         _.assert(_isIRI(iri), 'TermFactory#namedNode : invalid iri', TypeError);
+        let prefix = '', prefix_iri = '';
         for (let [_prefix, _iri] of this.#context) {
             if (iri.startsWith(_iri)) {
-                if (iri.length > _iri.length)
-                    iri = _prefix + ':' + iri.substr(_iri.length);
-                break;
+                if (iri.length > _iri.length && prefix_iri.length < _iri.length) {
+                    prefix     = _prefix;
+                    prefix_iri = _iri;
+                    //iri = _prefix + ':' + iri.substr(_iri.length);
+                    //break;
+                }
             }
         }
+        if (prefix_iri) iri = prefix + ':' + iri.substr(prefix_iri.length);
         return new NamedNode(iri);
     } // TermFactory#namedNode
 
