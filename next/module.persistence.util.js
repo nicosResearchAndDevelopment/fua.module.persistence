@@ -14,6 +14,6 @@ exports = module.exports = {
     isPrefixString:     new util.StringValidator(/^[a-z][a-z0-9+.-]*$/i),
     isIdentifierString: new util.StringValidator(/^\S+$/),
     isVariableString:   new util.StringValidator(/^[a-z]\w*$/i),
-    isLanguageString:   new util.StringValidator(/^[a-z]{2}(?:-[a-z]{2})?$/i), // TODO
+    isLanguageString:   new util.StringValidator(/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/i), // TODO
     generateId:         uuid.v1
 };

@@ -25,14 +25,17 @@ model.Term = class Term {
 
 model.NamedNode = class NamedNode extends model.Term {
 
+    #absoluteIRI = true;
+
     constructor(iri) {
         util.assert(util.isIRIString(iri), 'expected iri to be an IRI');
+        const absoluteIRI = value.substr(value.indexOf(':'), 2) === '//';
         super(iri);
+        this.#absoluteIRI = absoluteIRI;
     }
 
     toString() {
-        // TODO consider prefixes vs. http(s)://... (or [prefix]://... with the double slash in general)
-        return '<' + this.value + '>';
+        return this.#absoluteIRI && '<' + this.value + '>' || this.value;
     }
 
 }; // model.NamedNode
@@ -52,13 +55,22 @@ model.BlankNode = class BlankNode extends model.Term {
 
 model.Literal = class Literal extends model.Term {
 
+    #quoteMark = '"';
+    #typeTag   = '';
+
     constructor(value, language, datatype) {
         util.assert(util.isString(value), 'expected value to be a string');
+        const quoteMark = !value.includes('\n') && (!value.includes('"') && '"' || !value.includes("'") && "'")
+            || !value.includes('"""') && '"""' || !value.includes("'''") && "'''" || null;
+        util.assert(quoteMark, 'expected to be able to generate quotation marks for the value');
         util.assert(util.isLanguageString(language), 'expected language to be a Language');
         util.assert(datatype instanceof model.NamedNode, 'expected datatype to be a NamedNode');
+        const typeTag = language && '@' + language || '^^' + datatype.toString();
         super(value);
-        this.language = language;
-        this.datatype = datatype;
+        this.language   = language;
+        this.datatype   = datatype;
+        this.#quoteMark = quoteMark;
+        this.#typeTag   = typeTag;
         util.lockProp(this, 'language', 'datatype');
     }
 
@@ -71,8 +83,7 @@ model.Literal = class Literal extends model.Term {
     }
 
     toString() {
-        // TODO right quotation marks
-        return '"' + this.value + '"' + (this.language ? '@' + this.language : '^^' + this.datatype.toString());
+        return this.#quoteMark + this.value + this.#quoteMark + this.#typeTag;
     }
 
 }; // model.Literal
@@ -122,7 +133,9 @@ model.Quad = class Quad extends model.Term {
             && this.graph.equals(other.graph);
     }
 
-}; // model.Quad
+    toString() {
+        return this.subject.toString() + ' ' + this.predicate.toString() + ' ' + this.object.toString()
+            + (this.graph instanceof model.DefaultGraph ? this.graph.toString() : '') + ' .';
+    }
 
-// TODO ???
-// model.Collection = class Collection extends model.Term { }; // model.Collection
+}; // model.Quad
