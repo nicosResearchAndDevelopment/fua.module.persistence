@@ -63,7 +63,7 @@ model.Literal = class Literal extends model.Term {
         const quoteMark = !value.includes('\n') && (!value.includes('"') && '"' || !value.includes("'") && "'")
             || !value.includes('"""') && '"""' || !value.includes("'''") && "'''" || null;
         util.assert(quoteMark, 'expected to be able to generate quotation marks for the value');
-        util.assert(util.isLanguageString(language), 'expected language to be a Language');
+        util.assert(language === '' || util.isLanguageString(language), 'expected language to be a Language');
         util.assert(datatype instanceof model.NamedNode, 'expected datatype to be a NamedNode');
         const typeTag = language && '@' + language || '^^' + datatype.toString();
         super(value);
