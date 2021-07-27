@@ -1,16 +1,24 @@
 const
+    /** @type {exports} */
     model = exports,
     util  = require('./module.persistence.util.js');
 
 model.Term = class Term {
 
+    /**
+     * @param {string} value
+     */
     constructor(value) {
         util.assert(new.target !== model.Term, 'Term is an abstract class');
+        /** @type {string} */
         this.termType = new.target.name;
-        this.value    = value;
+        this.value = value;
         util.lockProp(this, 'termType', 'value');
     }
 
+    /**
+     * @param {model.Term} other
+     */
     equals(other) {
         return this === other || other
             && this.termType === other.termType
@@ -40,6 +48,7 @@ model.NamedNode = class NamedNode extends model.Term {
 
 }; // model.NamedNode
 
+/** @memberOf exports */
 model.BlankNode = class BlankNode extends model.Term {
 
     constructor(id) {
@@ -53,6 +62,7 @@ model.BlankNode = class BlankNode extends model.Term {
 
 }; // model.BlankNode
 
+/** @memberOf exports */
 model.Literal = class Literal extends model.Term {
 
     #quoteMark = '"';
@@ -88,6 +98,7 @@ model.Literal = class Literal extends model.Term {
 
 }; // model.Literal
 
+/** @memberOf exports */
 model.Variable = class Variable extends model.Term {
 
     constructor(name) {
@@ -101,6 +112,7 @@ model.Variable = class Variable extends model.Term {
 
 }; // model.Variable
 
+/** @memberOf exports */
 model.DefaultGraph = class DefaultGraph extends model.Term {
 
     constructor() {
@@ -109,6 +121,7 @@ model.DefaultGraph = class DefaultGraph extends model.Term {
 
 }; // model.DefaultGraph
 
+/** @memberOf exports */
 model.Quad = class Quad extends model.Term {
 
     constructor(subject, predicate, object, graph) {
