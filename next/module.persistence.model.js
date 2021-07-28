@@ -1,5 +1,4 @@
 const
-    /** @type {exports} */
     model = exports,
     util  = require('./module.persistence.util.js');
 
@@ -12,8 +11,8 @@ model.Term = class Term {
      * @param {string} value
      */
     constructor(value) {
-        util.assert(new.target !== model.Term, 'Term is an abstract class');
-        util.assert(util.isString(value), 'expected value to be a string');
+        util.assert(new.target !== model.Term, 'model.Term#constructor : Term is an abstract class');
+        util.assert(util.isString(value), 'model.Term#constructor : expected value to be a string', TypeError);
 
         /** @type {"NamedNode"|"BlankNode"|"Literal"|"Variable"|"DefaultGraph"|"Quad"} */
         this.termType = new.target.name;
@@ -41,6 +40,16 @@ model.Term = class Term {
         return '';
     } // model.Term#toString
 
+    static fromString(termStr) {
+        util.assert(util.isString(termStr), 'model.Term.fromString : expected termStr to be a string', TypeError);
+
+        if (termStr.includes(' ')) return model.Quad.fromString(termStr);
+        if (termStr.startsWith('_:')) return model.BlankNode.fromString(termStr);
+        if (termStr.startsWith('?')) return model.Variable.fromString(termStr);
+        if (termStr.startsWith('"')) return model.Literal.fromString(termStr);
+        return model.NamedNode(termStr);
+    } // model.Term.fromString
+
 }; // model.Term
 
 /**
@@ -56,7 +65,7 @@ model.NamedNode = class NamedNode extends model.Term {
      * @param {string} iri
      */
     constructor(iri) {
-        util.assert(util.isIRIString(iri), 'expected iri to be an IRI');
+        util.assert(util.isIRIString(iri), 'model.NamedNode#constructor : expected iri to be an IRI', TypeError);
         const absoluteIRI = iri.substr(iri.indexOf(':'), 2) === '//';
 
         super(iri);
@@ -71,6 +80,13 @@ model.NamedNode = class NamedNode extends model.Term {
         return this.#absoluteIRI && '<' + this.value + '>' || this.value;
     } // model.NamedNode#toString
 
+    static fromString(termStr) {
+        util.assert(util.isString(termStr), 'model.NamedNode.fromString : expected termStr to be a string', TypeError);
+
+        const iri = (termStr.startsWith('<') && termStr.endsWith('>')) ? termStr.substr(1, termStr.length - 2) : termStr;
+        return model.NamedNode(iri);
+    } // model.NamedNode.fromString
+
 }; // model.NamedNode
 
 /**
@@ -83,7 +99,7 @@ model.BlankNode = class BlankNode extends model.Term {
      * @param {string} id
      */
     constructor(id) {
-        util.assert(util.isIdentifierString(id), 'expected id to be an Identifier');
+        util.assert(util.isIdentifierString(id), 'model.BlankNode#constructor : expected id to be an Identifier', TypeError);
 
         super(id);
     } // model.BlankNode#constructor
@@ -95,6 +111,13 @@ model.BlankNode = class BlankNode extends model.Term {
         return '_:' + this.value;
     } // model.BlankNode#toString
 
+    static fromString(termStr) {
+        util.assert(util.isString(termStr), 'model.BlankNode.fromString : expected termStr to be a string', TypeError);
+
+        const id = termStr.startsWith('_:') ? termStr.substr(2) : termStr;
+        return new model.BlankNode(id);
+    } // model.BlankNode.fromString
+
 }; // model.BlankNode
 
 /**
@@ -103,10 +126,10 @@ model.BlankNode = class BlankNode extends model.Term {
  */
 model.Literal = class Literal extends model.Term {
 
-    /** @type {"\""|"'"|"\"\"\""|"'''"} */
-    #quoteMark = '"';
+    // /** @type {"\""|"'"|"\"\"\""|"'''"} */
+    // #quoteMark = '"';
     /** @type {string} */
-    #typeTag   = '';
+    #typeTag = '';
 
     /**
      * @param {string} value
@@ -114,12 +137,12 @@ model.Literal = class Literal extends model.Term {
      * @param {model.NamedNode} datatype
      */
     constructor(value, language, datatype) {
-        util.assert(util.isString(value), 'expected value to be a string');
-        const quoteMark = !value.includes('\n') && (!value.includes('"') && '"' || !value.includes("'") && "'")
-            || !value.includes('"""') && '"""' || !value.includes("'''") && "'''" || null;
-        util.assert(quoteMark, 'expected to be able to generate quotation marks for the value');
-        util.assert(language === '' || util.isLanguageString(language), 'expected language to be a Language');
-        util.assert(datatype instanceof model.NamedNode, 'expected datatype to be a NamedNode');
+        util.assert(util.isString(value), 'model.Literal#constructor : expected value to be a string', TypeError);
+        // const quoteMark = !value.includes('\n') && (!value.includes('"') && '"' || !value.includes("'") && "'")
+        //     || !value.includes('"""') && '"""' || !value.includes("'''") && "'''" || null;
+        // util.assert(quoteMark, 'model.Literal#constructor : expected to be able to generate quotation marks for the value');
+        util.assert(language === '' || util.isLanguageString(language), 'model.Literal#constructor : expected language to be a Language', TypeError);
+        util.assert(datatype instanceof model.NamedNode, 'model.Literal#constructor : expected datatype to be a NamedNode', TypeError);
         const typeTag = language && '@' + language || '^^' + datatype.toString();
 
         super(value);
@@ -131,8 +154,8 @@ model.Literal = class Literal extends model.Term {
 
         util.lockProp(this, 'language', 'datatype');
 
-        this.#quoteMark = quoteMark;
-        this.#typeTag   = typeTag;
+        // this.#quoteMark = quoteMark;
+        this.#typeTag = typeTag;
     } // model.Literal#constructor
 
     /**
@@ -151,9 +174,20 @@ model.Literal = class Literal extends model.Term {
      * @returns {string}
      */
     toString() {
-        return this.#quoteMark + this.value + this.#quoteMark + this.#typeTag;
-        // IDEA return '"' + encodeURIComponent(this.value) + '"' + this.#typeTag;
+        // return this.#quoteMark + this.value + this.#quoteMark + this.#typeTag;
+        return '"' + encodeURIComponent(this.value) + '"' + this.#typeTag;
+        // IDEA '"' + encodeURIComponent(this.value) + '"@' + this.language + '^^' + this.datatype.toString();
     } // model.Literal#toString
+
+    static fromString(termStr) {
+        util.assert(util.isString(termStr), 'model.Literal.fromString : expected termStr to be a string', TypeError);
+        util.assert(termStr.startsWith('"'), 'model.Literal.fromString : expected termStr to start with "');
+        const valueEnd = termStr.indexOf('"', 1);
+        util.assert(valueEnd > 0, 'model.Literal.fromString : expected termStr to include a second "');
+        const value = decodeURIComponent(termStr.substr(1, valueEnd - 1));
+        // TODO
+        return model.Literal(value);
+    } // model.Literal.fromString
 
 }; // model.Literal
 
@@ -167,7 +201,7 @@ model.Variable = class Variable extends model.Term {
      * @param {string} name
      */
     constructor(name) {
-        util.assert(util.isVariableString(name), 'expected name to be a Variable');
+        util.assert(util.isVariableString(name), 'model.Variable#constructor : expected name to be a Variable', TypeError);
 
         super(name);
     } // model.Variable#constructor
@@ -178,6 +212,13 @@ model.Variable = class Variable extends model.Term {
     toString() {
         return '?' + this.value;
     } // model.Variable#toString
+
+    static fromString(termStr) {
+        util.assert(util.isString(termStr), 'model.Variable.fromString : expected termStr to be a string', TypeError);
+
+        const name = termStr.startsWith('?') ? termStr.substr(1) : termStr;
+        return model.Variable(name);
+    } // model.Variable.fromString
 
 }; // model.Variable
 
@@ -190,6 +231,12 @@ model.DefaultGraph = class DefaultGraph extends model.Term {
     constructor() {
         super('');
     } // model.DefaultGraph#constructor
+
+    static fromString(termStr) {
+        util.assert(termStr === '', 'model.DefaultGraph.fromString : expected termStr to be an empty string', TypeError);
+
+        return model.DefaultGraph();
+    } // model.DefaultGraph.fromString
 
 }; // model.DefaultGraph
 
@@ -206,10 +253,10 @@ model.Quad = class Quad extends model.Term {
      * @param {model.Term} graph
      */
     constructor(subject, predicate, object, graph) {
-        util.assert(subject instanceof model.Term, 'expected subject to be a Term');
-        util.assert(predicate instanceof model.Term, 'expected predicate to be a Term');
-        util.assert(object instanceof model.Term, 'expected object to be a Term');
-        util.assert(graph instanceof model.Term, 'expected graph to be a Term');
+        util.assert(subject instanceof model.Term, 'model.Quad#constructor : expected subject to be a Term', TypeError);
+        util.assert(predicate instanceof model.Term, 'model.Quad#constructor : expected predicate to be a Term', TypeError);
+        util.assert(object instanceof model.Term, 'model.Quad#constructor : expected object to be a Term', TypeError);
+        util.assert(graph instanceof model.Term, 'model.Quad#constructor : expected graph to be a Term', TypeError);
 
         super('');
 
@@ -245,5 +292,15 @@ model.Quad = class Quad extends model.Term {
         return this.subject.toString() + ' ' + this.predicate.toString() + ' ' + this.object.toString()
             + (this.graph instanceof model.DefaultGraph ? this.graph.toString() : '') + ' .';
     } // model.Quad#toString
+
+    static fromString(termStr) {
+        util.assert(util.isString(termStr), 'model.Quad.fromString : expected termStr to be a string', TypeError);
+        const parts = termStr.split(' ');
+        util.assert(parts.pop() === '.', 'model.Quad.fromString : expected termStr to end with .', TypeError);
+        util.assert(parts.length === 3 || parts.length === 4, 'model.Quad.fromString : expected termStr to have 3 to 4 parts', TypeError);
+        const quadArgs = parts.map(partStr => model.Term.fromString(partStr));
+        if (quadArgs.length === 3) parts.push(new model.DefaultGraph());
+        return new model.Quad(...quadArgs);
+    } // model.Quad.fromString
 
 }; // model.Quad
