@@ -4,6 +4,7 @@ const
 
 /**
  * @class model.Term
+ * @see https://rdf.js.org/data-model-spec/#term-interface
  */
 model.Term = class Term {
 
@@ -55,6 +56,7 @@ model.Term = class Term {
 /**
  * @class model.NamedNode
  * @extends {model.Term}
+ * @see https://rdf.js.org/data-model-spec/#namednode-interface
  */
 model.NamedNode = class NamedNode extends model.Term {
 
@@ -92,6 +94,7 @@ model.NamedNode = class NamedNode extends model.Term {
 /**
  * @class model.BlankNode
  * @extends {model.Term}
+ * @see https://rdf.js.org/data-model-spec/#blanknode-interface
  */
 model.BlankNode = class BlankNode extends model.Term {
 
@@ -123,6 +126,7 @@ model.BlankNode = class BlankNode extends model.Term {
 /**
  * @class model.Literal
  * @extends {model.Term}
+ * @see https://rdf.js.org/data-model-spec/#literal-interface
  */
 model.Literal = class Literal extends model.Term {
 
@@ -194,6 +198,7 @@ model.Literal = class Literal extends model.Term {
 /**
  * @class model.Variable
  * @extends {model.Term}
+ * @see https://rdf.js.org/data-model-spec/#variable-interface
  */
 model.Variable = class Variable extends model.Term {
 
@@ -225,6 +230,7 @@ model.Variable = class Variable extends model.Term {
 /**
  * @class model.DefaultGraph
  * @extends {model.Term}
+ * @see https://rdf.js.org/data-model-spec/#defaultgraph-interface
  */
 model.DefaultGraph = class DefaultGraph extends model.Term {
 
@@ -243,6 +249,7 @@ model.DefaultGraph = class DefaultGraph extends model.Term {
 /**
  * @class model.Quad
  * @extends {model.Term}
+ * @see https://rdf.js.org/data-model-spec/#quad-interface
  */
 model.Quad = class Quad extends model.Term {
 
@@ -253,6 +260,7 @@ model.Quad = class Quad extends model.Term {
      * @param {model.Term} graph
      */
     constructor(subject, predicate, object, graph) {
+        // TODO maybe differentiated Term validation
         util.assert(subject instanceof model.Term, 'model.Quad#constructor : expected subject to be a Term', TypeError);
         util.assert(predicate instanceof model.Term, 'model.Quad#constructor : expected predicate to be a Term', TypeError);
         util.assert(object instanceof model.Term, 'model.Quad#constructor : expected object to be a Term', TypeError);
