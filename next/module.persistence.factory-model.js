@@ -10,9 +10,65 @@ const
  * @memberOf exports
  * @private
  */
-FactoryModel.PrefixContext = class PrefixContext extends Map {
+FactoryModel.PrefixContext = class PrefixContext {
 
-    // TODO rethink in terms of allowing sub-uris
+    #prefixes   = [];
+    #namespaces = [];
+
+    constructor(context) {
+        if (context) {
+            util.assert(util.isObject(context) && !util.isArray(context), 'PrefixContext#constructor : expected context to be an object', TypeError);
+            for (let [prefix, namespace] of Object.entries(context)) {
+                this.add(prefix, namespace);
+            }
+        }
+    } // FactoryModel.PrefixContext#constructor
+
+    add(prefix, namespace) {
+        util.assert(util.isPrefixString(prefix), 'PrefixContext#add : expected prefix to be a string', TypeError);
+        util.assert(util.isIRIString(namespace), 'PrefixContext#add : expected namespace to be a string', TypeError);
+        let prefixIndex = -1, namespaceIndex = -1, indexLength = this.#prefixes.length;
+        for (let index = 0, length = indexLength; index < length; index++) {
+            util.assert(prefix !== this.#prefixes[index][0], 'prefix (' + prefix + ') already defined');
+            util.assert(namespace !== this.#namespaces[index][0], 'namespace (' + namespace + ') already defined');
+            if (prefixIndex < 0 && prefix > this.#prefixes[index][0]) prefixIndex = index;
+            if (namespaceIndex < 0 && namespace.length < this.#prefixes[index][0]) namespaceIndex = index;
+        }
+        if (prefixIndex < 0) prefixIndex = indexLength;
+        if (namespaceIndex < 0) namespaceIndex = indexLength;
+        this.#prefixes.splice(prefixIndex, 0, [prefix, namespace]);
+        this.#namespaces.splice(namespaceIndex, 0, [namespace, prefix]);
+    } // FactoryModel.PrefixContext#add
+
+    /**
+     * @param {string} uri
+     * @returns {string}
+     */
+    prefix(uri) {
+        util.assert(util.isString(uri), 'PrefixContext#prefix : expected uri to be a string', TypeError);
+        for (let [namespace, prefix] of this.#namespaces) {
+            if (uri.startsWith(namespace))
+                return prefix + ':' + uri.substr(namespace.length);
+        }
+        return uri;
+    } // FactoryModel.PrefixContext#prefix
+
+    /**
+     * @param {string} iri
+     * @returns {string}
+     */
+    resolve(iri) {
+        util.assert(util.isString(iri), 'PrefixContext#resolve : expected iri to be a string', TypeError);
+        for (let [prefix, namespace] of this.#prefixes) {
+            if (iri.startsWith(prefix + ':') && iri.substr(prefix.length + 1, 2) !== '//')
+                return namespace + iri.substr(prefix.length + 1);
+        }
+        return iri;
+    } // FactoryModel.PrefixContext#resolve
+
+    toJSON() {
+        return Object.fromEntries(this.#prefixes);
+    } // FactoryModel.PrefixContext#toJSON
 
 }; // FactoryModel.PrefixContext
 
@@ -25,7 +81,7 @@ FactoryModel.PrefixContext = class PrefixContext extends Map {
 FactoryModel.TermFactory = class TermFactory {
 
     /** @type {FactoryModel.PrefixContext} */
-    #context        = new FactoryModel.PrefixContext();
+    #context        = null;
     /** @type {DataModel.DefaultGraph} */
     #defaultGraph   = null;
     /** @type {DataModel.NamedNode} */
@@ -34,18 +90,19 @@ FactoryModel.TermFactory = class TermFactory {
     #rdf_langString = null;
 
     constructor(context) {
-        // TODO
-        this.#defaultGraph = new DataModel.DefaultGraph();
+        this.#context        = new FactoryModel.PrefixContext(context);
+        this.#defaultGraph   = new DataModel.DefaultGraph();
+        this.#xsd_string     = this.namedNode('http://www.w3.org/2001/XMLSchema#string');
+        this.#rdf_langString = this.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
     } // FactoryModel.TermFactory#constructor
 
     context() {
-        // TODO
-        return Object.fromEntries(this.#context.entries());
+        return this.#context.toJSON();
     } // FactoryModel.TermFactory#context
 
     namedNode(value) {
         util.assert(util.isString(value), 'TermFactory#namedNode : expected value to be a string');
-        // TODO
+        return new DataModel.NamedNode(this.#context.prefix(value));
     } // FactoryModel.TermFactory#namedNode
 
     blankNode(value) {
@@ -68,12 +125,11 @@ FactoryModel.TermFactory = class TermFactory {
     } // FactoryModel.TermFactory#variable
 
     defaultGraph() {
-        // TODO
-        return this.#defaultGraph || (this.#defaultGraph = new DataModel.DefaultGraph());
+        return this.#defaultGraph;
     } // FactoryModel.TermFactory#defaultGraph
 
     quad(subject, predicate, object, graph) {
-        // TODO
+        return new DataModel.Quad(subject, predicate, object, graph || this.#defaultGraph);
     } // FactoryModel.TermFactory#quad
 
     fromTerm(original) {
@@ -84,9 +140,12 @@ FactoryModel.TermFactory = class TermFactory {
         // TODO
     } // FactoryModel.TermFactory#fromQuad
 
+    // TODO
+    // termToId() {}
+    // termFromId() {}
+
     fromString(termStr) {
         // IDEA
-        // TODO
     } // FactoryModel.TermFactory#fromString
 
 }; // FactoryModel.TermFactory
