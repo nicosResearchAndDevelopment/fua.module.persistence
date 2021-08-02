@@ -2,12 +2,12 @@ const
     util         = require('./module.persistence.util.js'),
     DataModel    = require('./module.persistence.data-model.js'),
     FactoryModel = require('./module.persistence.factory-model.js'),
+    /** @namespace StoreModel */
     StoreModel   = exports;
 
 /**
- * @class StoreModel.TermIndex
- * @memberOf exports
- * @private
+ * @class TermIndex
+ * @memberOf StoreModel
  */
 StoreModel.TermIndex = class TermIndex {
 
@@ -16,9 +16,8 @@ StoreModel.TermIndex = class TermIndex {
 }; // StoreModel.TermIndex
 
 /**
- * @class StoreModel.QuadIndex
- * @memberOf exports
- * @private
+ * @class QuadIndex
+ * @memberOf StoreModel
  */
 StoreModel.QuadIndex = class QuadIndex {
 
@@ -27,10 +26,9 @@ StoreModel.QuadIndex = class QuadIndex {
 }; // StoreModel.QuadIndex
 
 /**
- * @class StoreModel.Dataset
+ * @class Dataset
+ * @memberOf StoreModel
  * @see https://rdf.js.org/dataset-spec/#dataset-interface
- * @memberOf exports
- * @public
  */
 StoreModel.Dataset = class Dataset {
 
@@ -40,12 +38,13 @@ StoreModel.Dataset = class Dataset {
 
 /**
  * @abstract
- * @class StoreModel.DataStore
- * @memberOf exports
- * @public
+ * @class DataStore
+ * @memberOf StoreModel
  */
 StoreModel.DataStore = class DataStore {
 
     // TODO
 
 }; // StoreModel.DataStore
+
+module.exports = StoreModel;

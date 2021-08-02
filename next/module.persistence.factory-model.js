@@ -1,79 +1,152 @@
 const
     util         = require('./module.persistence.util.js'),
     DataModel    = require('./module.persistence.data-model.js'),
+    /** @namespace FactoryModel */
     FactoryModel = exports;
 
 /**
- * @class FactoryModel.ContextIndex
- * @memberOf exports
- * @private
+ * @class ContextIndex
+ * @memberOf FactoryModel
  */
 FactoryModel.ContextIndex = class ContextIndex {
 
-    #prefixMap = new Map();
-    #iriList   = [];
-
-    // IDEA Map/Set-like interface
-    // add(prefix: string, iri: string): this
-    // -> throw if prefix or iri is already in use
-    // set(prefix: string, iri: string): this
-    // -> throw if iri is already in use
-    // get(prefix: string): string
-    // has(prefix: string): boolean
-    // delete(prefix: string): boolean
-    // forEach(callbackFn: (iri: string, prefix: string, set: ContextIndex) => any, thisArg?: any): void
-    // IDEA maybe differentiate methods for prefixes and iris
-    // add(prefix: string, iri: string): this
-    // hasPrefix(prefix: string): boolean
-    // getPrefix(prefix: string): string
-    // deletePrefix(prefix: string): boolean
-    // hasIRI(iri: string): boolean
-    // getIRI(iri: string): boolean
-    // deleteIRI(iri: string): boolean
-    // IDEA methods for handling prefixes and iris
-    // prefixIRI(iri: string): string
-    // -> absolute iri to prefixes iri
-    // -> use the prefix with the longest matching iri-start
-    // resolveIRI(iri: string): string
-    // -> prefixed iri to absolute iri
-    // -> do not un-prefix, if the ':' follows a '//' (e.g. http://...)
-    // toJSON(): {[prefix: string]: string}
-    // -> lexical order of the prefixes
-
-    // TODO rework the following
-    #prefixes   = [];
-    #namespaces = [];
-
-    add(prefix, namespace) {
-        util.assert(util.isPrefixString(prefix), 'ContextIndex#add : expected prefix to be a string', TypeError);
-        util.assert(util.isIRIString(namespace), 'ContextIndex#add : expected namespace to be a string', TypeError);
-        let prefixIndex = -1, namespaceIndex = -1, indexLength = this.#prefixes.length;
-        for (let index = 0, length = indexLength; index < length; index++) {
-            util.assert(prefix !== this.#prefixes[index][0], 'prefix (' + prefix + ') already defined');
-            util.assert(namespace !== this.#namespaces[index][0], 'namespace (' + namespace + ') already defined');
-            if (prefixIndex < 0 && prefix > this.#prefixes[index][0]) prefixIndex = index;
-            if (namespaceIndex < 0 && namespace.length < this.#prefixes[index][0]) namespaceIndex = index;
-        }
-        if (prefixIndex < 0) prefixIndex = indexLength;
-        if (namespaceIndex < 0) namespaceIndex = indexLength;
-        this.#prefixes.splice(prefixIndex, 0, [prefix, namespace]);
-        this.#namespaces.splice(namespaceIndex, 0, [namespace, prefix]);
-    } // FactoryModel.ContextIndex#add
+    /** @type {{[key: string]: number}} prefix -> entryIndex */
+    #prefixes = Object.create(null);
+    /** @type {{[key: string]: number}} iri -> entryIndex */
+    #iris     = Object.create(null);
+    /** @type {Array<[string, string]>} entryIndex -> [prefix, iri] */
+    #entries  = [];
 
     /**
-     * @param {string} uri
+     * @type {number}
+     */
+    get size() {
+        return this.#entries.length;
+    } // ContextIndex#size
+
+    /**
+     * @returns {Iterator<[string, string]>}
+     */
+    * entries() {
+        for (let index = 0; index < this.#entries.length; index++) {
+            const entry = this.#entries[index];
+            yield [entry[0], entry[1]];
+        }
+    } // ContextIndex#entries
+
+    /**
+     * @param {string} prefix
+     * @param {string} iri
+     * @returns {FactoryModel.ContextIndex}
+     */
+    addEntry(prefix, iri) {
+        util.assert(util.isPrefixString(prefix), 'ContextIndex#addEntry : expected prefix to be a prefix string', TypeError);
+        util.assert(util.isIRIString(iri), 'ContextIndex#addEntry : expected iri to be an iri string', TypeError);
+        util.assert(this.#prefixes[prefix] ?? -1 < 0, 'ContextIndex#addEntry : expected prefix to be unique');
+        util.assert(this.#iris[iri] ?? -1 < 0, 'ContextIndex#addEntry : expected iri to be unique');
+        let entryIndex = this.#entries.findIndex(entry => iri.length > entry[1].length || iri.length === entry[1].length && prefix < entry[0]);
+        if (entryIndex < 0) entryIndex = this.#entries.length;
+        for (let index = entryIndex; index < this.#entries.length; index++) {
+            const entry = this.#entries[index];
+            this.#prefixes[entry[0]]++;
+            this.#iris[entry[1]]++;
+        }
+        this.#prefixes[prefix] = entryIndex;
+        this.#iris[iri]        = entryIndex;
+        this.#entries.splice(entryIndex, 0, [prefix, iri]);
+        return this;
+    } // ContextIndex#addEntry
+
+    /**
+     * @param {string} prefix
+     * @returns {boolean}
+     */
+    hasPrefix(prefix) {
+        if (!util.isString(prefix)) return false;
+        const entryIndex = this.#prefixes[prefix] ?? -1;
+        return entryIndex >= 0;
+    } // ContextIndex#hasPrefix
+
+    /**
+     * @param {string} iri
+     * @returns {boolean}
+     */
+    hasIRI(iri) {
+        if (!util.isString(iri)) return false;
+        const entryIndex = this.#iris[iri] ?? -1;
+        return entryIndex >= 0;
+    } // ContextIndex#hasIRI
+
+    /**
+     * @param {string} prefix
+     * @returns {string|null}
+     */
+    getIRI(prefix) {
+        if (!util.isString(prefix)) return null;
+        const entryIndex = this.#prefixes[prefix] ?? -1;
+        return entryIndex >= 0 && this.#entries[entryIndex][1] || null;
+    } // ContextIndex#getIRI
+
+    /**
+     * @param {string} iri
+     * @returns {string|null}
+     */
+    getPrefix(iri) {
+        if (!util.isString(iri)) return null;
+        const entryIndex = this.#iris[iri] ?? -1;
+        return entryIndex >= 0 && this.#entries[entryIndex][0] || null;
+    } // ContextIndex#getPrefix
+
+    /**
+     * @param {string} prefix
+     * @returns {boolean}
+     */
+    deletePrefix(prefix) {
+        if (!util.isString(prefix)) return false;
+        const entryIndex = this.#prefixes[prefix] ?? -1;
+        if (entryIndex < 0) return false;
+        for (let index = entryIndex + 1; index < this.#entries.length; index++) {
+            const entry = this.#entries[index];
+            this.#prefixes[entry[0]]--;
+            this.#iris[entry[1]]--;
+        }
+        const [entry] = this.#entries.splice(entryIndex, 1);
+        delete this.#prefixes[entry[0]];
+        delete this.#iris[entry[1]];
+        return true;
+    } // ContextIndex#deletePrefix
+
+    /**
+     * @param {string} iri
+     * @returns {boolean}
+     */
+    deleteIRI(iri) {
+        if (!util.isString(iri)) return false;
+        const entryIndex = this.#iris[iri] ?? -1;
+        if (entryIndex < 0) return false;
+        for (let index = entryIndex + 1; index < this.#entries.length; index++) {
+            const entry = this.#entries[index];
+            this.#prefixes[entry[0]]--;
+            this.#iris[entry[1]]--;
+        }
+        const [entry] = this.#entries.splice(entryIndex, 1);
+        delete this.#prefixes[entry[0]];
+        delete this.#iris[entry[1]];
+        return true;
+    } // ContextIndex#deleteIRI
+
+    /**
+     * @param {string} iri
      * @returns {string}
      */
-    prefixIRI(uri) {
-        util.assert(util.isString(uri), 'ContextIndex#prefixIRI : expected uri to be a string', TypeError);
-        for (let [namespace, prefix] of this.#namespaces) {
-            if (uri.startsWith(namespace)) {
-                const rel = uri.substr(namespace.length);
-                return prefix + ':' + rel;
-            }
+    prefixIRI(iri) {
+        util.assert(util.isString(iri), 'ContextIndex#prefixIRI : expected iri to be a string', TypeError);
+        for (let entry of this.#entries) {
+            if (entry[1].length < iri.length && iri.startsWith(entry[1]))
+                return entry[0] + ':' + iri.substr(entry[1].length);
         }
-        return uri;
-    } // FactoryModel.ContextIndex#prefixIRI
+        return iri;
+    } // ContextIndex#prefixIRI
 
     /**
      * @param {string} iri
@@ -81,34 +154,23 @@ FactoryModel.ContextIndex = class ContextIndex {
      */
     resolveIRI(iri) {
         util.assert(util.isString(iri), 'ContextIndex#resolveIRI : expected iri to be a string', TypeError);
-        for (let [prefix, namespace] of this.#prefixes) {
-            if (iri.startsWith(prefix + ':')) {
-                const rel = iri.substr(prefix.length + 1);
-                if (!rel.startsWith('//')) return namespace + iri.substr(prefix.length + 1);
-            }
+        const colonIndex = iri.indexOf(':');
+        if (colonIndex < 0 || iri.substr(colonIndex + 1, 2) === '//') return iri;
+        const baseIRI = this.getIRI(iri.substring(0, colonIndex));
+        return baseIRI && baseIRI + iri.substr(colonIndex + 1) || iri;
+    } // ContextIndex#resolveIRI
 
-        }
-        return iri;
-    } // FactoryModel.ContextIndex#resolveIRI
-
-    toJSON() {
-        return Object.fromEntries(this.#prefixes);
-    } // FactoryModel.ContextIndex#toJSON
-
-}; // FactoryModel.ContextIndex
+}; // ContextIndex
 
 /**
- * @class FactoryModel.TermFactory
+ * @class TermFactory
+ * @memberOf FactoryModel
  * @see https://rdf.js.org/data-model-spec/#datafactory-interface
- * @memberOf exports
- * @public
  */
 FactoryModel.TermFactory = class TermFactory {
 
-    // TODO move toString and fromString to the factory, because Terms like NamedNode/Literal does not know their context
-
     /** @type {FactoryModel.ContextIndex} */
-    #context        = new FactoryModel.ContextIndex();
+    #context        = null;
     /** @type {DataModel.DefaultGraph} */
     #defaultGraph   = null;
     /** @type {DataModel.NamedNode} */
@@ -116,67 +178,148 @@ FactoryModel.TermFactory = class TermFactory {
     /** @type {DataModel.NamedNode} */
     #rdf_langString = null;
 
+    /**
+     * @param {{[prefix: string]: string}} [context]
+     */
     constructor(context) {
+        this.#context = new FactoryModel.ContextIndex();
         if (context) {
-            util.assert(util.isObject(context) && !util.isArray(context), 'TermFactory#constructor : expected context to be an object', TypeError);
+            util.assert(util.isObject(context), 'TermFactory#constructor : expected context to be an object', TypeError);
             for (let [prefix, iri] of Object.entries(context)) {
-                this.#context.add(prefix, iri);
+                this.#context.addEntry(prefix, iri);
             }
         }
         this.#defaultGraph   = this.defaultGraph();
         this.#xsd_string     = this.namedNode('http://www.w3.org/2001/XMLSchema#string');
         this.#rdf_langString = this.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
-    } // FactoryModel.TermFactory#constructor
+    } // TermFactory#constructor
 
+    /**
+     * @returns {{[prefix: string]: string}}
+     */
     context() {
-        return this.#context.toJSON();
-    } // FactoryModel.TermFactory#context
+        return Object.fromEntries(this.#context.entries());
+    } // TermFactory#context
 
+    /**
+     * @param {string} value
+     * @returns {DataModel.NamedNode}
+     */
     namedNode(value) {
-        util.assert(util.isString(value), 'TermFactory#namedNode : expected value to be a string');
+        util.assert(util.isString(value), 'TermFactory#namedNode : expected value to be a string', TypeError);
         return new DataModel.NamedNode(this.#context.prefixIRI(value));
-    } // FactoryModel.TermFactory#namedNode
+    } // TermFactory#namedNode
 
+    /**
+     * @param {string} value
+     * @returns {function(suffix: string): DataModel.NamedNode}
+     */
+    namespace(value) {
+        util.assert(util.isString(value), 'TermFactory#namespace : expected value to be a string', TypeError);
+        return (suffix) => {
+            util.assert(util.isString(suffix), 'TermFactory#namespace : expected suffix to be a string', TypeError);
+            return this.namedNode(value + suffix);
+        };
+    } // TermFactory#namespace
+
+    /**
+     * @param {string} [value]
+     * @returns {DataModel.BlankNode}
+     */
     blankNode(value) {
-        util.assert(!value || util.isString(value), 'TermFactory#blankNode : expected value to be a string');
+        util.assert(!value || util.isString(value), 'TermFactory#blankNode : expected value to be a string', TypeError);
         return new DataModel.BlankNode(value || util.generateBlankId());
-    } // FactoryModel.TermFactory#blankNode
+    } // TermFactory#blankNode
 
+    /**
+     * @param {string} value
+     * @param {string|DataModel.NamedNode} [languageOrDatatype]
+     * @returns {DataModel.Literal}
+     */
     literal(value, languageOrDatatype) {
-        util.assert(util.isString(value), 'TermFactory#literal : expected value to be a string');
+        util.assert(util.isString(value), 'TermFactory#literal : expected value to be a string', TypeError);
         const
             language = util.isString(languageOrDatatype) && languageOrDatatype || '',
             datatype = language && this.#rdf_langString || languageOrDatatype || this.#xsd_string;
         return new DataModel.Literal(value, language, datatype);
-    } // FactoryModel.TermFactory#literal
+    } // TermFactory#literal
 
+    /**
+     * @param {string} value
+     * @returns {DataModel.Variable}
+     */
     variable(value) {
-        util.assert(util.isString(value), 'TermFactory#variable : expected value to be a string');
+        util.assert(util.isString(value), 'TermFactory#variable : expected value to be a string', TypeError);
         return new DataModel.Variable(value);
-    } // FactoryModel.TermFactory#variable
+    } // TermFactory#variable
 
+    /**
+     * @returns {DataModel.DefaultGraph}
+     */
     defaultGraph() {
         return this.#defaultGraph || new DataModel.DefaultGraph();
-    } // FactoryModel.TermFactory#defaultGraph
+    } // TermFactory#defaultGraph
 
+    /**
+     * @param {DataModel.Term} subject
+     * @param {DataModel.Term} predicate
+     * @param {DataModel.Term} object
+     * @param {DataModel.Term} [graph]
+     * @returns {DataModel.Quad}
+     */
     quad(subject, predicate, object, graph) {
-        return new DataModel.Quad(subject, predicate, object, graph || this.#defaultGraph);
-    } // FactoryModel.TermFactory#quad
+        return new DataModel.Quad(subject, predicate, object, graph || this.defaultGraph());
+    } // TermFactory#quad
 
+    /**
+     * @param {{termType: string, value: string, language?: string, datatype?: object}} original
+     * @returns {DataModel.Term}
+     */
     fromTerm(original) {
-        // TODO
-    } // FactoryModel.TermFactory#fromTerm
+        util.assert(util.isObject(original), 'TermFactory#fromTerm : expected original to be an object', TypeError);
+        switch (original.termType) {
+            case 'NamedNode':
+                return this.namedNode(original.value);
+            case 'BlankNode':
+                return this.blankNode(original.value);
+            case 'Literal':
+                return this.literal(original.value, original.language || this.fromTerm(original.datatype));
+            case 'Variable':
+                return this.variable(value);
+            case 'DefaultGraph':
+                return this.defaultGraph();
+            case 'Quad':
+                return this.fromQuad(original);
+            default:
+                util.assert(false, 'TermFactory#fromTerm : expected original to have a known termType');
+        }
+    } // TermFactory#fromTerm
 
+    /**
+     * @param {{subject: object, predicate: object, object: object, graph?: object}} original
+     * @returns {DataModel.Quad}
+     */
     fromQuad(original) {
-        // TODO
-    } // FactoryModel.TermFactory#fromQuad
+        util.assert(util.isObject(original), 'TermFactory#fromQuad : expected original to be an object', TypeError);
+        return this.quad(
+            this.fromTerm(original.subject),
+            this.fromTerm(original.predicate),
+            this.fromTerm(original.object),
+            original.graph && this.fromTerm(original.graph) || null
+        );
+    } // TermFactory#fromQuad
 
-    // TODO
+    // TODO move toString and fromString to the factory, because Terms like NamedNode/Literal does not know their context
     // termToId() {}
     // termFromId() {}
 
     fromString(termStr) {
+        util.assert(util.isString(termStr), 'TermFactory#fromString : expected termStr to be a string', TypeError);
+        if (termStr.startsWith('_:')) return this.blankNode(termStr.substr(2));
         // IDEA
-    } // FactoryModel.TermFactory#fromString
+        // TODO continue here
+    } // TermFactory#fromString
 
-}; // FactoryModel.TermFactory
+}; // TermFactory
+
+module.exports = FactoryModel;

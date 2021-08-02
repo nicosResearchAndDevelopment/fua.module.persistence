@@ -1,13 +1,13 @@
 const
     util      = require('./module.persistence.util.js'),
+    /** @namespace DataModel */
     DataModel = exports;
 
 /**
  * @abstract
- * @class DataModel.Term
+ * @class Term
+ * @memberOf DataModel
  * @see https://rdf.js.org/data-model-spec/#term-interface
- * @memberOf exports
- * @public
  */
 DataModel.Term = class Term {
 
@@ -25,7 +25,7 @@ DataModel.Term = class Term {
         this.value = value;
 
         util.lockProp(this, 'termType', 'value');
-    } // DataModel.Term#constructor
+    } // Term#constructor
 
     /**
      * @param {DataModel.Term} other
@@ -35,14 +35,14 @@ DataModel.Term = class Term {
         return this === other || other
             && this.termType === other.termType
             && this.value === other.value;
-    } // DataModel.Term#equals
+    } // Term#equals
 
     /**
      * @returns {string}
      */
     toString() {
         return '';
-    } // DataModel.Term#toString
+    } // Term#toString
 
     static fromString(termStr) {
         util.assert(util.isString(termStr), 'Term.fromString : expected termStr to be a string', TypeError);
@@ -52,16 +52,15 @@ DataModel.Term = class Term {
         if (termStr.startsWith('?')) return DataModel.Variable.fromString(termStr);
         if (termStr.startsWith('"')) return DataModel.Literal.fromString(termStr);
         return DataModel.NamedNode(termStr);
-    } // DataModel.Term.fromString
+    } // Term.fromString
 
-}; // DataModel.Term
+}; // Term
 
 /**
- * @class DataModel.NamedNode
+ * @class NamedNode
+ * @memberOf DataModel
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#namednode-interface
- * @memberOf exports
- * @public
  */
 DataModel.NamedNode = class NamedNode extends DataModel.Term {
 
@@ -78,30 +77,29 @@ DataModel.NamedNode = class NamedNode extends DataModel.Term {
         super(iri);
 
         this.#absoluteIRI = absoluteIRI;
-    } // DataModel.NamedNode#constructor
+    } // NamedNode#constructor
 
     /**
      * @returns {string}
      */
     toString() {
         return this.#absoluteIRI && '<' + this.value + '>' || this.value;
-    } // DataModel.NamedNode#toString
+    } // NamedNode#toString
 
     static fromString(termStr) {
         util.assert(util.isString(termStr), 'NamedNode.fromString : expected termStr to be a string', TypeError);
 
         const iri = (termStr.startsWith('<') && termStr.endsWith('>')) ? termStr.substr(1, termStr.length - 2) : termStr;
         return DataModel.NamedNode(iri);
-    } // DataModel.NamedNode.fromString
+    } // NamedNode.fromString
 
-}; // DataModel.NamedNode
+}; // NamedNode
 
 /**
- * @class DataModel.BlankNode
+ * @class BlankNode
+ * @memberOf DataModel
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#blanknode-interface
- * @memberOf exports
- * @public
  */
 DataModel.BlankNode = class BlankNode extends DataModel.Term {
 
@@ -112,30 +110,29 @@ DataModel.BlankNode = class BlankNode extends DataModel.Term {
         util.assert(util.isIdentifierString(id), 'BlankNode#constructor : expected id to be an Identifier', TypeError);
 
         super(id);
-    } // DataModel.BlankNode#constructor
+    } // BlankNode#constructor
 
     /**
      * @returns {string}
      */
     toString() {
         return '_:' + this.value;
-    } // DataModel.BlankNode#toString
+    } // BlankNode#toString
 
     static fromString(termStr) {
         util.assert(util.isString(termStr), 'BlankNode.fromString : expected termStr to be a string', TypeError);
 
         const id = termStr.startsWith('_:') ? termStr.substr(2) : termStr;
         return new DataModel.BlankNode(id);
-    } // DataModel.BlankNode.fromString
+    } // BlankNode.fromString
 
-}; // DataModel.BlankNode
+}; // BlankNode
 
 /**
- * @class DataModel.Literal
+ * @class Literal
+ * @memberOf DataModel
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#literal-interface
- * @memberOf exports
- * @public
  */
 DataModel.Literal = class Literal extends DataModel.Term {
 
@@ -169,7 +166,7 @@ DataModel.Literal = class Literal extends DataModel.Term {
 
         // this.#quoteMark = quoteMark;
         this.#typeTag = typeTag;
-    } // DataModel.Literal#constructor
+    } // Literal#constructor
 
     /**
      * @param {DataModel.Literal|DataModel.Term} other
@@ -181,7 +178,7 @@ DataModel.Literal = class Literal extends DataModel.Term {
             && this.value === other.value
             && this.language === other.language
             && this.datatype.equals(other.datatype);
-    } // DataModel.Literal#equals
+    } // Literal#equals
 
     /**
      * @returns {string}
@@ -190,7 +187,7 @@ DataModel.Literal = class Literal extends DataModel.Term {
         // return this.#quoteMark + this.value + this.#quoteMark + this.#typeTag;
         return '"' + encodeURIComponent(this.value) + '"' + this.#typeTag;
         // IDEA '"' + encodeURIComponent(this.value) + '"@' + this.language + '^^' + this.datatype.toString();
-    } // DataModel.Literal#toString
+    } // Literal#toString
 
     static fromString(termStr) {
         util.assert(util.isString(termStr), 'Literal.fromString : expected termStr to be a string', TypeError);
@@ -200,16 +197,15 @@ DataModel.Literal = class Literal extends DataModel.Term {
         const value = decodeURIComponent(termStr.substr(1, valueEnd - 1));
         // TODO
         return DataModel.Literal(value);
-    } // DataModel.Literal.fromString
+    } // Literal.fromString
 
-}; // DataModel.Literal
+}; // Literal
 
 /**
- * @class DataModel.Variable
+ * @class Variable
+ * @memberOf DataModel
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#variable-interface
- * @memberOf exports
- * @public
  */
 DataModel.Variable = class Variable extends DataModel.Term {
 
@@ -220,51 +216,49 @@ DataModel.Variable = class Variable extends DataModel.Term {
         util.assert(util.isVariableString(name), 'Variable#constructor : expected name to be a Variable', TypeError);
 
         super(name);
-    } // DataModel.Variable#constructor
+    } // Variable#constructor
 
     /**
      * @returns {string}
      */
     toString() {
         return '?' + this.value;
-    } // DataModel.Variable#toString
+    } // Variable#toString
 
     static fromString(termStr) {
         util.assert(util.isString(termStr), 'Variable.fromString : expected termStr to be a string', TypeError);
 
         const name = termStr.startsWith('?') ? termStr.substr(1) : termStr;
         return DataModel.Variable(name);
-    } // DataModel.Variable.fromString
+    } // Variable.fromString
 
-}; // DataModel.Variable
+}; // Variable
 
 /**
- * @class DataModel.DefaultGraph
+ * @class DefaultGraph
+ * @memberOf DataModel
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#defaultgraph-interface
- * @memberOf exports
- * @public
  */
 DataModel.DefaultGraph = class DefaultGraph extends DataModel.Term {
 
     constructor() {
         super('');
-    } // DataModel.DefaultGraph#constructor
+    } // DefaultGraph#constructor
 
     static fromString(termStr) {
         util.assert(termStr === '', 'DefaultGraph.fromString : expected termStr to be an empty string', TypeError);
 
         return DataModel.DefaultGraph();
-    } // DataModel.DefaultGraph.fromString
+    } // DefaultGraph.fromString
 
-}; // DataModel.DefaultGraph
+}; // DefaultGraph
 
 /**
- * @class DataModel.Quad
+ * @class Quad
+ * @memberOf DataModel
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#quad-interface
- * @memberOf exports
- * @public
  */
 DataModel.Quad = class Quad extends DataModel.Term {
 
@@ -293,7 +287,7 @@ DataModel.Quad = class Quad extends DataModel.Term {
         this.graph = graph;
 
         util.lockProp(this, 'subject', 'predicate', 'object', 'graph');
-    } // DataModel.Quad#constructor
+    } // Quad#constructor
 
     /**
      * @param {DataModel.Quad|DataModel.Term} other
@@ -306,7 +300,7 @@ DataModel.Quad = class Quad extends DataModel.Term {
             && this.predicate.equals(other.predicate)
             && this.object.equals(other.object)
             && this.graph.equals(other.graph);
-    } // DataModel.Quad#equals
+    } // Quad#equals
 
     /**
      * @returns {string}
@@ -314,7 +308,7 @@ DataModel.Quad = class Quad extends DataModel.Term {
     toString() {
         return this.subject.toString() + ' ' + this.predicate.toString() + ' ' + this.object.toString()
             + (this.graph instanceof DataModel.DefaultGraph ? this.graph.toString() : '') + ' .';
-    } // DataModel.Quad#toString
+    } // Quad#toString
 
     static fromString(termStr) {
         util.assert(util.isString(termStr), 'Quad.fromString : expected termStr to be a string', TypeError);
@@ -324,6 +318,8 @@ DataModel.Quad = class Quad extends DataModel.Term {
         const quadArgs = parts.map(partStr => DataModel.Term.fromString(partStr));
         if (quadArgs.length === 3) parts.push(new DataModel.DefaultGraph());
         return new DataModel.Quad(...quadArgs);
-    } // DataModel.Quad.fromString
+    } // Quad.fromString
 
-}; // DataModel.Quad
+}; // Quad
+
+module.exports = DataModel;
