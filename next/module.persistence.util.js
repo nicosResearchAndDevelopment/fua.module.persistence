@@ -15,5 +15,7 @@ exports = module.exports = {
     isIdentifierString: new util.StringValidator(/^\S+$/),
     isVariableString:   new util.StringValidator(/^[a-z]\w*$/i),
     isLanguageString:   new util.StringValidator(/^[a-z]{1,3}(?:-[a-z0-9]{1,8})*$/i),
-    generateBlankId:    () => uuid.v1()
+    generateBlankId:    () => uuid.v1(),
+    encodeLiteralValue: (value) => encodeURIComponent(value),
+    decodeLiteralValue: (value) => decodeURIComponent(value)
 };

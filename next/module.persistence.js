@@ -4,9 +4,9 @@ const
     FactoryModel = require('./module.persistence.factory-model.js'),
     StoreModel = require('./module.persistence.store-model.js');
 
-
 exports.model       = DataModel;
 exports.TermFactory = FactoryModel.TermFactory;
+exports.DataFactory = FactoryModel.DataFactory;
 exports.Dataset     = StoreModel.Dataset;
 exports.DataStore   = StoreModel.DataStore;
 

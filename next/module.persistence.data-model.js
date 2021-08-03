@@ -44,16 +44,6 @@ DataModel.Term = class Term {
         return '';
     } // Term#toString
 
-    static fromString(termStr) {
-        util.assert(util.isString(termStr), 'Term.fromString : expected termStr to be a string', TypeError);
-
-        if (termStr.includes(' ')) return DataModel.Quad.fromString(termStr);
-        if (termStr.startsWith('_:')) return DataModel.BlankNode.fromString(termStr);
-        if (termStr.startsWith('?')) return DataModel.Variable.fromString(termStr);
-        if (termStr.startsWith('"')) return DataModel.Literal.fromString(termStr);
-        return DataModel.NamedNode(termStr);
-    } // Term.fromString
-
 }; // Term
 
 /**
@@ -65,33 +55,26 @@ DataModel.Term = class Term {
 DataModel.NamedNode = class NamedNode extends DataModel.Term {
 
     /** @type {boolean} */
-    #absoluteIRI = true;
+    #isPrefixed = false;
 
     /**
      * @param {string} iri
      */
     constructor(iri) {
         util.assert(util.isIRIString(iri), 'NamedNode#constructor : expected iri to be an IRI', TypeError);
-        const absoluteIRI = iri.substr(iri.indexOf(':'), 2) === '//';
 
         super(iri);
 
-        this.#absoluteIRI = absoluteIRI;
+        const colonIndex = iri.indexOf(':');
+        this.#isPrefixed = colonIndex > 0 && iri.charAt(colonIndex + 1) !== '/';
     } // NamedNode#constructor
 
     /**
      * @returns {string}
      */
     toString() {
-        return this.#absoluteIRI && '<' + this.value + '>' || this.value;
+        return this.#isPrefixed ? this.value : '<' + this.value + '>';
     } // NamedNode#toString
-
-    static fromString(termStr) {
-        util.assert(util.isString(termStr), 'NamedNode.fromString : expected termStr to be a string', TypeError);
-
-        const iri = (termStr.startsWith('<') && termStr.endsWith('>')) ? termStr.substr(1, termStr.length - 2) : termStr;
-        return DataModel.NamedNode(iri);
-    } // NamedNode.fromString
 
 }; // NamedNode
 
@@ -119,13 +102,6 @@ DataModel.BlankNode = class BlankNode extends DataModel.Term {
         return '_:' + this.value;
     } // BlankNode#toString
 
-    static fromString(termStr) {
-        util.assert(util.isString(termStr), 'BlankNode.fromString : expected termStr to be a string', TypeError);
-
-        const id = termStr.startsWith('_:') ? termStr.substr(2) : termStr;
-        return new DataModel.BlankNode(id);
-    } // BlankNode.fromString
-
 }; // BlankNode
 
 /**
@@ -136,8 +112,6 @@ DataModel.BlankNode = class BlankNode extends DataModel.Term {
  */
 DataModel.Literal = class Literal extends DataModel.Term {
 
-    // /** @type {"\""|"'"|"\"\"\""|"'''"} */
-    // #quoteMark = '"';
     /** @type {string} */
     #typeTag = '';
 
@@ -148,9 +122,6 @@ DataModel.Literal = class Literal extends DataModel.Term {
      */
     constructor(value, language, datatype) {
         util.assert(util.isString(value), 'Literal#constructor : expected value to be a string', TypeError);
-        // const quoteMark = !value.includes('\n') && (!value.includes('"') && '"' || !value.includes("'") && "'")
-        //     || !value.includes('"""') && '"""' || !value.includes("'''") && "'''" || null;
-        // util.assert(quoteMark, 'Literal#constructor : expected to be able to generate quotation marks for the value');
         util.assert(language === '' || util.isLanguageString(language), 'Literal#constructor : expected language to be a Language', TypeError);
         util.assert(datatype instanceof DataModel.NamedNode, 'Literal#constructor : expected datatype to be a NamedNode', TypeError);
         const typeTag = language && '@' + language || '^^' + datatype.toString();
@@ -164,7 +135,6 @@ DataModel.Literal = class Literal extends DataModel.Term {
 
         util.lockProp(this, 'language', 'datatype');
 
-        // this.#quoteMark = quoteMark;
         this.#typeTag = typeTag;
     } // Literal#constructor
 
@@ -184,20 +154,8 @@ DataModel.Literal = class Literal extends DataModel.Term {
      * @returns {string}
      */
     toString() {
-        // return this.#quoteMark + this.value + this.#quoteMark + this.#typeTag;
-        return '"' + encodeURIComponent(this.value) + '"' + this.#typeTag;
-        // IDEA '"' + encodeURIComponent(this.value) + '"@' + this.language + '^^' + this.datatype.toString();
+        return '"' + util.encodeLiteralValue(this.value) + '"' + this.#typeTag;
     } // Literal#toString
-
-    static fromString(termStr) {
-        util.assert(util.isString(termStr), 'Literal.fromString : expected termStr to be a string', TypeError);
-        util.assert(termStr.startsWith('"'), 'Literal.fromString : expected termStr to start with "');
-        const valueEnd = termStr.indexOf('"', 1);
-        util.assert(valueEnd > 0, 'Literal.fromString : expected termStr to include a second "');
-        const value = decodeURIComponent(termStr.substr(1, valueEnd - 1));
-        // TODO
-        return DataModel.Literal(value);
-    } // Literal.fromString
 
 }; // Literal
 
@@ -225,13 +183,6 @@ DataModel.Variable = class Variable extends DataModel.Term {
         return '?' + this.value;
     } // Variable#toString
 
-    static fromString(termStr) {
-        util.assert(util.isString(termStr), 'Variable.fromString : expected termStr to be a string', TypeError);
-
-        const name = termStr.startsWith('?') ? termStr.substr(1) : termStr;
-        return DataModel.Variable(name);
-    } // Variable.fromString
-
 }; // Variable
 
 /**
@@ -246,13 +197,61 @@ DataModel.DefaultGraph = class DefaultGraph extends DataModel.Term {
         super('');
     } // DefaultGraph#constructor
 
-    static fromString(termStr) {
-        util.assert(termStr === '', 'DefaultGraph.fromString : expected termStr to be an empty string', TypeError);
-
-        return DataModel.DefaultGraph();
-    } // DefaultGraph.fromString
-
 }; // DefaultGraph
+
+/**
+ * @name Subject
+ * @memberOf DataModel
+ * @see https://rdf.js.org/data-model-spec/#dfn-subject
+ */
+DataModel.Subject = {
+    [Symbol.hasInstance](instance) {
+        return (instance instanceof DataModel.NamedNode)
+            || (instance instanceof DataModel.BlankNode)
+            || (instance instanceof DataModel.Variable)
+            || (instance instanceof DataModel.Quad);
+    } // Subject.@@hasInstance
+}; // Subject
+
+/**
+ * @name Predicate
+ * @memberOf DataModel
+ * @see https://rdf.js.org/data-model-spec/#dfn-predicate
+ */
+DataModel.Predicate = {
+    [Symbol.hasInstance](instance) {
+        return (instance instanceof DataModel.NamedNode)
+            || (instance instanceof DataModel.Variable);
+    } // Predicate.@@hasInstance
+}; // Predicate
+
+/**
+ * @name Object
+ * @memberOf DataModel
+ * @see https://rdf.js.org/data-model-spec/#dfn-object
+ */
+DataModel.Object = {
+    [Symbol.hasInstance](instance) {
+        return (instance instanceof DataModel.NamedNode)
+            || (instance instanceof DataModel.Literal)
+            || (instance instanceof DataModel.BlankNode)
+            || (instance instanceof DataModel.Variable);
+    } // Object.@@hasInstance
+}; // Object
+
+/**
+ * @name Graph
+ * @memberOf DataModel
+ * @see https://rdf.js.org/data-model-spec/#dfn-graph
+ */
+DataModel.Graph = {
+    [Symbol.hasInstance](instance) {
+        return (instance instanceof DataModel.DefaultGraph)
+            || (instance instanceof DataModel.NamedNode)
+            || (instance instanceof DataModel.BlankNode)
+            || (instance instanceof DataModel.Variable);
+    } // Graph.@@hasInstance
+}; // Graph
 
 /**
  * @class Quad
@@ -269,11 +268,10 @@ DataModel.Quad = class Quad extends DataModel.Term {
      * @param {DataModel.Term} graph
      */
     constructor(subject, predicate, object, graph) {
-        // TODO maybe differentiated Term validation
-        util.assert(subject instanceof DataModel.Term, 'Quad#constructor : expected subject to be a Term', TypeError);
-        util.assert(predicate instanceof DataModel.Term, 'Quad#constructor : expected predicate to be a Term', TypeError);
-        util.assert(object instanceof DataModel.Term, 'Quad#constructor : expected object to be a Term', TypeError);
-        util.assert(graph instanceof DataModel.Term, 'Quad#constructor : expected graph to be a Term', TypeError);
+        util.assert(subject instanceof DataModel.Subject, 'Quad#constructor : expected subject to be a Subject Term', TypeError);
+        util.assert(predicate instanceof DataModel.Predicate, 'Quad#constructor : expected predicate to be a Predicate Term', TypeError);
+        util.assert(object instanceof DataModel.Object, 'Quad#constructor : expected object to be a Object Term', TypeError);
+        util.assert(graph instanceof DataModel.Graph, 'Quad#constructor : expected graph to be a Graph Term', TypeError);
 
         super('');
 
@@ -306,20 +304,24 @@ DataModel.Quad = class Quad extends DataModel.Term {
      * @returns {string}
      */
     toString() {
-        return this.subject.toString() + ' ' + this.predicate.toString() + ' ' + this.object.toString()
-            + (this.graph instanceof DataModel.DefaultGraph ? this.graph.toString() : '') + ' .';
+        return '{' + this.subject.toString()
+            + ' ' + this.predicate.toString()
+            + ' ' + this.object.toString()
+            + (this.graph instanceof DataModel.DefaultGraph ? '' : ' ' + this.graph.toString())
+            + '}';
     } // Quad#toString
 
-    static fromString(termStr) {
-        util.assert(util.isString(termStr), 'Quad.fromString : expected termStr to be a string', TypeError);
-        const parts = termStr.split(' ');
-        util.assert(parts.pop() === '.', 'Quad.fromString : expected termStr to end with .', TypeError);
-        util.assert(parts.length === 3 || parts.length === 4, 'Quad.fromString : expected termStr to have 3 to 4 parts', TypeError);
-        const quadArgs = parts.map(partStr => DataModel.Term.fromString(partStr));
-        if (quadArgs.length === 3) parts.push(new DataModel.DefaultGraph());
-        return new DataModel.Quad(...quadArgs);
-    } // Quad.fromString
-
 }; // Quad
+
+/**
+ * @name Triple
+ * @memberOf DataModel
+ */
+DataModel.Triple = {
+    [Symbol.hasInstance](instance) {
+        return (instance instanceof DataModel.Quad)
+            && (instance.graph instanceof DataModel.DefaultGraph);
+    } // Triple.@@hasInstance
+}; // Triple
 
 module.exports = DataModel;

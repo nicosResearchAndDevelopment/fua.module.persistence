@@ -100,6 +100,11 @@ describe('FactoryModel', function () {
         expect(quad.object).not.toBe(quad_duplicate.object);
         expect(quad.object.equals(quad_duplicate.object)).toBeTruthy();
 
+        expect(factory.fromString(rdfs_label.toString())).toMatchObject(rdfs_label);
+        expect(factory.fromString(blank.toString())).toMatchObject(blank);
+        expect(factory.fromString(hello.toString())).toMatchObject(hello);
+        expect(factory.fromString(quad.toString())).toMatchObject(quad);
+
     });
 
 });

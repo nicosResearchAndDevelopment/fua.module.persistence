@@ -170,7 +170,7 @@ FactoryModel.ContextIndex = class ContextIndex {
 FactoryModel.TermFactory = class TermFactory {
 
     /** @type {FactoryModel.ContextIndex} */
-    #context        = null;
+    #context        = new FactoryModel.ContextIndex();
     /** @type {DataModel.DefaultGraph} */
     #defaultGraph   = null;
     /** @type {DataModel.NamedNode} */
@@ -182,7 +182,6 @@ FactoryModel.TermFactory = class TermFactory {
      * @param {{[prefix: string]: string}} [context]
      */
     constructor(context) {
-        this.#context = new FactoryModel.ContextIndex();
         if (context) {
             util.assert(util.isObject(context), 'TermFactory#constructor : expected context to be an object', TypeError);
             for (let [prefix, iri] of Object.entries(context)) {
@@ -272,6 +271,16 @@ FactoryModel.TermFactory = class TermFactory {
     } // TermFactory#quad
 
     /**
+     * @param {DataModel.Term} subject
+     * @param {DataModel.Term} predicate
+     * @param {DataModel.Term} object
+     * @returns {DataModel.Quad}
+     */
+    triple(subject, predicate, object) {
+        return this.quad(subject, predicate, object);
+    } // TermFactory#triple
+
+    /**
      * @param {{termType: string, value: string, language?: string, datatype?: object}} original
      * @returns {DataModel.Term}
      */
@@ -309,17 +318,53 @@ FactoryModel.TermFactory = class TermFactory {
         );
     } // TermFactory#fromQuad
 
-    // TODO move toString and fromString to the factory, because Terms like NamedNode/Literal does not know their context
-    // termToId() {}
-    // termFromId() {}
-
+    /**
+     * @param {string} termStr
+     * @returns {DataModel.Term}
+     */
     fromString(termStr) {
         util.assert(util.isString(termStr), 'TermFactory#fromString : expected termStr to be a string', TypeError);
-        if (termStr.startsWith('_:')) return this.blankNode(termStr.substr(2));
-        // IDEA
-        // TODO continue here
+        switch (termStr.charAt(0)) {
+            case '<':
+                util.assert(termStr.endsWith('>'), 'TermFactory#fromString : expected termStr to end with > if it starts with <', TypeError);
+                return this.namedNode(termStr.substr(1, termStr.length - 2));
+            case '_':
+                util.assert(termStr.charAt(1) === ':', 'TermFactory#fromString : expected termStr to continue with : if it starts with _', TypeError);
+                return this.blankNode(termStr.substr(2));
+            case '?':
+                return this.variable(termStr.substr(1));
+            case '"':
+                const quoteIndex = termStr.indexOf('"', 1);
+                util.assert(quoteIndex > 0, 'TermFactory#fromString : expected termStr to include a second " if it starts with "', TypeError);
+                return this.literal(
+                    util.decodeLiteralValue(termStr.substring(1, quoteIndex)),
+                    termStr.charAt(quoteIndex + 1) === '@' ? termStr.substr(quoteIndex + 2)
+                        : termStr.substr(quoteIndex + 1, 2) === '^^' ? this.fromString(termStr.substr(quoteIndex + 3))
+                            : null
+                );
+            case '{':
+                util.assert(termStr.endsWith('}'), 'TermFactory#fromString : expected termStr to end with } if it starts with {', TypeError);
+                const quadArgs = termStr.substr(1, termStr.length - 2).split(' ').map(argStr => this.fromString(argStr));
+                return this.quad(...quadArgs);
+            default:
+                return this.namedNode(termStr);
+        }
     } // TermFactory#fromString
 
 }; // TermFactory
+
+/**
+ * @class DataFactory
+ * @memberOf FactoryModel
+ * @extends {FactoryModel.TermFactory}
+ */
+FactoryModel.DataFactory = class DataFactory extends FactoryModel.TermFactory {
+
+    variable(value) {
+        util.assert(false, 'DataFactory#variable : expected no variable from the data factory');
+        return super.variable(value);
+    } // DataFactory#variable
+
+}; // DataFactory
 
 module.exports = FactoryModel;
