@@ -1,6 +1,5 @@
 const
     util      = require('./module.persistence.util.js'),
-    /** @namespace DataModel */
     DataModel = exports;
 
 /**

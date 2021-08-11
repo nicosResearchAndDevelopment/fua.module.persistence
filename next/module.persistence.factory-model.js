@@ -1,7 +1,6 @@
 const
     util         = require('./module.persistence.util.js'),
     DataModel    = require('./module.persistence.data-model.js'),
-    /** @namespace FactoryModel */
     FactoryModel = exports;
 
 /**
