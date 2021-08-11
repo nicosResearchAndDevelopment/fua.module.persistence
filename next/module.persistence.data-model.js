@@ -5,8 +5,7 @@ const
 
 /**
  * @abstract
- * @class Term
- * @memberOf DataModel
+ * @class DataModel.Term
  * @see https://rdf.js.org/data-model-spec/#term-interface
  */
 DataModel.Term = class Term {
@@ -47,8 +46,7 @@ DataModel.Term = class Term {
 }; // Term
 
 /**
- * @class NamedNode
- * @memberOf DataModel
+ * @class DataModel.NamedNode
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#namednode-interface
  */
@@ -79,8 +77,7 @@ DataModel.NamedNode = class NamedNode extends DataModel.Term {
 }; // NamedNode
 
 /**
- * @class BlankNode
- * @memberOf DataModel
+ * @class DataModel.BlankNode
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#blanknode-interface
  */
@@ -105,8 +102,7 @@ DataModel.BlankNode = class BlankNode extends DataModel.Term {
 }; // BlankNode
 
 /**
- * @class Literal
- * @memberOf DataModel
+ * @class DataModel.Literal
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#literal-interface
  */
@@ -160,8 +156,7 @@ DataModel.Literal = class Literal extends DataModel.Term {
 }; // Literal
 
 /**
- * @class Variable
- * @memberOf DataModel
+ * @class DataModel.Variable
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#variable-interface
  */
@@ -186,8 +181,7 @@ DataModel.Variable = class Variable extends DataModel.Term {
 }; // Variable
 
 /**
- * @class DefaultGraph
- * @memberOf DataModel
+ * @class DataModel.DefaultGraph
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#defaultgraph-interface
  */
@@ -200,8 +194,7 @@ DataModel.DefaultGraph = class DefaultGraph extends DataModel.Term {
 }; // DefaultGraph
 
 /**
- * @name Subject
- * @memberOf DataModel
+ * @name DataModel.Subject
  * @see https://rdf.js.org/data-model-spec/#dfn-subject
  */
 DataModel.Subject = {
@@ -214,8 +207,7 @@ DataModel.Subject = {
 }; // Subject
 
 /**
- * @name Predicate
- * @memberOf DataModel
+ * @name DataModel.Predicate
  * @see https://rdf.js.org/data-model-spec/#dfn-predicate
  */
 DataModel.Predicate = {
@@ -226,8 +218,7 @@ DataModel.Predicate = {
 }; // Predicate
 
 /**
- * @name Object
- * @memberOf DataModel
+ * @name DataModel.Object
  * @see https://rdf.js.org/data-model-spec/#dfn-object
  */
 DataModel.Object = {
@@ -240,8 +231,7 @@ DataModel.Object = {
 }; // Object
 
 /**
- * @name Graph
- * @memberOf DataModel
+ * @name DataModel.Graph
  * @see https://rdf.js.org/data-model-spec/#dfn-graph
  */
 DataModel.Graph = {
@@ -254,8 +244,7 @@ DataModel.Graph = {
 }; // Graph
 
 /**
- * @class Quad
- * @memberOf DataModel
+ * @class DataModel.Quad
  * @extends {DataModel.Term}
  * @see https://rdf.js.org/data-model-spec/#quad-interface
  */
@@ -314,8 +303,7 @@ DataModel.Quad = class Quad extends DataModel.Term {
 }; // Quad
 
 /**
- * @name Triple
- * @memberOf DataModel
+ * @name DataModel.Triple
  */
 DataModel.Triple = {
     [Symbol.hasInstance](instance) {

@@ -5,8 +5,7 @@ const
     FactoryModel = exports;
 
 /**
- * @class ContextIndex
- * @memberOf FactoryModel
+ * @class FactoryModel.ContextIndex
  */
 FactoryModel.ContextIndex = class ContextIndex {
 
@@ -163,8 +162,7 @@ FactoryModel.ContextIndex = class ContextIndex {
 }; // ContextIndex
 
 /**
- * @class TermFactory
- * @memberOf FactoryModel
+ * @class FactoryModel.TermFactory
  * @see https://rdf.js.org/data-model-spec/#datafactory-interface
  */
 FactoryModel.TermFactory = class TermFactory {
@@ -354,8 +352,7 @@ FactoryModel.TermFactory = class TermFactory {
 }; // TermFactory
 
 /**
- * @class DataFactory
- * @memberOf FactoryModel
+ * @class FactoryModel.DataFactory
  * @extends {FactoryModel.TermFactory}
  */
 FactoryModel.DataFactory = class DataFactory extends FactoryModel.TermFactory {
