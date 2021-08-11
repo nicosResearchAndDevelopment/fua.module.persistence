@@ -1,9 +1,9 @@
 const
-    util         = require('./module.persistence.util.js'),
-    DataModel    = require('./module.persistence.data-model.js'),
+    util      = require('./module.persistence.util.js'),
+    DataModel = require('./module.persistence.data-model.js'),
     // FactoryModel = require('./module.persistence.factory-model.js'),
     // StoreModel   = require('./module.persistence.store-model.js'),
-    JsonModel    = exports;
+    JsonModel = exports;
 
 /**
  * @class JsonModel.ResourceNode
@@ -16,7 +16,8 @@ JsonModel.ResourceNode = class ResourceNode {
     constructor(id) {
         if (id instanceof DataModel.NamedNode) id = id.value;
         else if (id instanceof DataModel.BlankNode) id = '_:' + id;
-        else util.assert(util.isIdentifierString(id), 'ResourceNode#constructor : expected id to be an identifier', TypeError);
+        else util.assert(util.isIRIString(id) || (util.isIdentifierString(id) && id.startsWith('_:') && id.length > 2),
+                'ResourceNode#constructor : expected id to be an IRI or blank identifier', TypeError);
 
         this['@id'] = id;
         util.lockProp(this, '@id');
@@ -52,5 +53,17 @@ JsonModel.ObjectLiteral = class ObjectLiteral {
     } // ObjectLiteral#constructor
 
 }; // ObjectLiteral
+
+/**
+ * @class JsonModel.PropertyList
+ */
+JsonModel.PropertyList = class PropertyList {
+
+    constructor() {
+        this['@list'] = [];
+        util.lockProp(this, '@list');
+    } // PropertyList#constructor
+
+}; // PropertyList
 
 module.exports = JsonModel;
