@@ -10,6 +10,7 @@ const
     _reservedPrefixes = Object.freeze([
         'http', 'https', '_'
     ]);
+const util            = require("./module.persistence.util.js");
 
 //#region >> DataModel
 
@@ -505,6 +506,12 @@ class TermFactory {
                 return '_:' + term.value;
             case 'Variable':
                 return '?' + term.value;
+            case 'Literal':
+                return '"' + encodeURIComponent(term.value) + '"' + (
+                    this.#default.rdf_langString.equals(term.datatype) && '@' + term.language
+                    || !this.#default.xsd_string.equals(term.datatype) && '^^' + term.datatype.value
+                    || ''
+                );
             default:
                 _.assert(false, 'TermFactory#termToId : ' + term.termType + ' ist not supported');
         }
@@ -512,12 +519,23 @@ class TermFactory {
 
     termFromId(id) {
         _.assert(_.isString(id), 'TermFactory#termFromId : invalid id', TypeError);
-        if (id.startsWith('_:')) {
-            return this.blankNode(id.substr(2));
-        } else if (id.startsWith('?')) {
-            return this.variable(id.substr(1));
-        } else {
-            return this.namedNode(id);
+        switch (id.charAt(0)) {
+            case '_':
+                _.assert(id.charAt(1) === ':', 'TermFactory#termFromId : invalid blank id', TypeError);
+                return this.blankNode(id.substr(2));
+            case '?':
+                return this.variable(id.substr(1));
+            case '"':
+                const quoteIndex = id.indexOf('"', 1);
+                _.assert(quoteIndex > 0, 'TermFactory#termFromId : invalid literal id', TypeError);
+                return this.literal(
+                    decodeURIComponent(id.substring(1, quoteIndex)),
+                    id.charAt(quoteIndex + 1) === '@' ? id.substr(quoteIndex + 2)
+                        : id.substr(quoteIndex + 1, 2) === '^^' ? this.namedNode(id.substr(quoteIndex + 3))
+                            : null
+                );
+            default:
+                return this.namedNode(id);
         }
     } // TermFactory#termFromId
 
