@@ -6,6 +6,7 @@ const
     DataFactory    = require('./module.persistence.DataFactory.js'),
     defaultFactory = new DataFactory();
 
+/** @alias fua.module.persistence.DataStore */
 class DataStore extends EventEmitter {
 
     /**

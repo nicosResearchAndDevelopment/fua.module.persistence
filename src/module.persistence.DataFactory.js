@@ -2,6 +2,7 @@ const
     _           = require('./module.persistence.util.js'),
     TermFactory = require('./module.persistence.TermFactory.js');
 
+/** @alias fua.module.persistence.DataFactory */
 class DataFactory extends TermFactory {
 
     variable(name) {

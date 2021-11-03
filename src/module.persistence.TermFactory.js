@@ -10,10 +10,10 @@ const
     _reservedPrefixes = Object.freeze([
         'http', 'https', '_'
     ]);
-const util            = require("./module.persistence.util.js");
 
 //#region >> DataModel
 
+/** @alias fua.module.persistence.Term */
 class Term {
 
     constructor(termType, value) {
@@ -35,6 +35,7 @@ class Term {
 
 } // Term
 
+/** @alias fua.module.persistence.NamedNode */
 class NamedNode extends Term {
 
     constructor(iri) {
@@ -43,6 +44,7 @@ class NamedNode extends Term {
 
 } // NamedNode
 
+/** @alias fua.module.persistence.BlankNode */
 class BlankNode extends Term {
 
     constructor(id) {
@@ -51,6 +53,7 @@ class BlankNode extends Term {
 
 } // BlankNode
 
+/** @alias fua.module.persistence.Literal */
 class Literal extends Term {
 
     constructor(value, language, datatype) {
@@ -75,6 +78,7 @@ class Literal extends Term {
 
 } // Literal
 
+/** @alias fua.module.persistence.Variable */
 class Variable extends Term {
 
     constructor(name) {
@@ -83,6 +87,7 @@ class Variable extends Term {
 
 } // Variable
 
+/** @alias fua.module.persistence.DefaultGraph */
 class DefaultGraph extends Term {
 
     constructor() {
@@ -91,6 +96,7 @@ class DefaultGraph extends Term {
 
 } // DefaultGraph
 
+/** @alias fua.module.persistence.Quad */
 class Quad extends Term {
 
     constructor(subject, predicate, object, graph) {
@@ -122,6 +128,7 @@ class Quad extends Term {
 
 //#endregion << DataModel
 
+/** @alias fua.module.persistence.TermFactory */
 class TermFactory {
 
     #default = Object.create(null);

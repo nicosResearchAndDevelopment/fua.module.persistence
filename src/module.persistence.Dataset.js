@@ -8,6 +8,7 @@ const
 // IDEA delete a term by setting TermIndex#terms[key] to null, so you can recover it later and dont loose the proper key
 // REM Dataset, TermIndex and QuadIndex could be optimized, though working currently
 
+/** @alias fua.module.persistence.TermIndex */
 class TermIndex {
 
     constructor() {
@@ -42,6 +43,7 @@ class TermIndex {
 
 } // TermIndex
 
+/** @alias fua.module.persistence.QuadIndex */
 class QuadIndex {
 
     constructor() {
@@ -114,6 +116,7 @@ class QuadIndex {
 
 } // QuadIndex
 
+/** @alias fua.module.persistence.Dataset */
 class Dataset {
 
     #terms = new TermIndex();
