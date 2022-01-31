@@ -165,6 +165,14 @@ class TermFactory {
         return Object.fromEntries(this.#context);
     } // TermFactory#context
 
+    namespace(iri) {
+        _.assert(_isIRI(iri), 'TermFactory#namespace : invalid iri', TypeError);
+        return (suffix) => {
+            _.assert(_.isString(suffix), 'TermFactory#namespace : invalid suffix', TypeError);
+            return this.namedNode(iri + suffix);
+        }
+    } // TermFactory#namespace
+
     /**
      * @param {Term} term
      * @returns {boolean}
