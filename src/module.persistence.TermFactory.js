@@ -167,11 +167,11 @@ class TermFactory {
 
     /**
      * @param {string} iri
-     * @returns {function(suffix: string): NamedNode}
+     * @returns {function(suffix?: string): NamedNode}
      */
     namespace(iri) {
         _.assert(_isIRI(iri), 'TermFactory#namespace : invalid iri', TypeError);
-        return (suffix) => {
+        return (suffix = '') => {
             _.assert(_.isString(suffix), 'TermFactory#namespace : invalid suffix', TypeError);
             return this.namedNode(iri + suffix);
         }
