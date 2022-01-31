@@ -165,6 +165,10 @@ class TermFactory {
         return Object.fromEntries(this.#context);
     } // TermFactory#context
 
+    /**
+     * @param {string} iri
+     * @returns {function(suffix: string): NamedNode}
+     */
     namespace(iri) {
         _.assert(_isIRI(iri), 'TermFactory#namespace : invalid iri', TypeError);
         return (suffix) => {
