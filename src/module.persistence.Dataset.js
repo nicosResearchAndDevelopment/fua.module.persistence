@@ -519,8 +519,9 @@ class Dataset {
      */
     async addStream(stream) {
         const quads = [];
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
             stream.on('data', quad => quads.push(quad));
+            stream.on('error', reject);
             stream.on('end', resolve);
         });
         return this.add(quads);
