@@ -1,11 +1,11 @@
-# @nrd/fua.module.persistence
+# @fua/module.persistence
 
-- [InMemory](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.inmemory)
-- [FileSystem](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.filesystem)
-- [Redis](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.redis)
-- [MongoDB](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.mongodb)
-- [Neo4j](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.neo4j)
-- [SQLite](https://git02.int.nsc.ag/Research/fua/lib/module.persistence.sqlite)
+- [InMemory](https://github.com/nicosResearchAndDevelopment/fua.module.persistence.inmemory)
+- [FileSystem](https://github.com/nicosResearchAndDevelopment/fua.module.persistence.filesystem)
+- [Redis](https://github.com/nicosResearchAndDevelopment/fua.module.persistence.redis)
+- [MongoDB](https://github.com/nicosResearchAndDevelopment/fua.module.persistence.mongodb)
+- [Neo4j](https://github.com/nicosResearchAndDevelopment/fua.module.persistence.neo4j)
+- [SQLite](https://github.com/nicosResearchAndDevelopment/fua.module.persistence.sqlite)
 
 ## Interfaces
 

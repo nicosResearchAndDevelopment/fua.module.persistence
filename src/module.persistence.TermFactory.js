@@ -1,7 +1,7 @@
 const
     _                 = require('./module.persistence.util.js'),
-    uuid              = require('@nrd/fua.core.uuid'),
-    {StringValidator} = require('@nrd/fua.core.util'),
+    uuid              = require('@fua/core.uuid'),
+    {StringValidator} = require('@fua/core.util'),
     _isPrefix         = new StringValidator(/^[a-z][a-z0-9+\-._]*$/i),
     _isIRI            = new StringValidator(/^[a-z][a-z0-9+\-.]*:\S*$/i),
     _isIdentifier     = new StringValidator(/^\S+$/),

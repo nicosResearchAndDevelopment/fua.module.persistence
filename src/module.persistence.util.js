@@ -5,7 +5,7 @@ const {
           isBoolean, isNumber, isString,
           isFunction, isObject,
           isArray, isIterable
-      } = require('@nrd/fua.core.util');
+      } = require('@fua/core.util');
 
 module.exports = {
     assert: new Assert('module.persistence'),
